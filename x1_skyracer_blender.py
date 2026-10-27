@@ -1,5 +1,5 @@
 """
-X1 SkyRacer - two-seat X1 Racing flying car, procedural model for Blender 3.6 / 4.x
+X1 SkyRacer - FAN-TILT BRANCH (25 deg cockpit, pushers lowered + tilted 20 deg, wings at +5 deg incidence) - procedural model for Blender 3.6 / 4.x
 ============================================================================
 Run inside Blender:  Scripting workspace -> Open -> this file -> Run Script.
 
@@ -14,6 +14,16 @@ Sized to the X1 Racing rule book (x1racing.com/rule-book) and checked on every r
 Game-ready: metres, nose -Y (glTF +Z forward), Z up, origin on the ground; every rotor,
 fan and wheel is its own object spinning on local Z; hidden COL_ proxies; camera empties.
 
+Cockpit (ergonomic rework, Oct 2026 - outside design unchanged above the wing roots):
+  * two side-by-side bare-frame seats (3.4), backrest 25 deg from vertical (sports-car posture),
+    H-point dropped to 17.1 in off the ground
+  * belly bubbled down and out from the toes back under the whole seat into a foot well / seat tub
+    (keel 7 in off the ground)
+  * canopy crown raised 2.8 in to 52.7 in (stowed limit 53 in) and moved back over the heads
+  * adjustable foot-rest rail; fit is checked every run for a 95th-percentile man and a
+    5th-percentile woman, bare-headed (head, shoulders, torso, knees, shins, feet, firewall)
+  Tune with H_Y/H_Z, SEAT_BACK_DEG, FLOOR_Z, FOOTWELL and CANOPY.
+
 Fuel: 200 lb propane (rule book 3.3/3.6) in three pressure vessels - one capsule tank inside each
 Dornier-style sponson (low on the flanks, between the stowed ducts) plus a transverse tank behind
 the firewall. The sponsons also carry the four wheels. The LTO accumulator under the engine bay is
@@ -26,7 +36,7 @@ Folding: wings + lift ducts fold on hinge empties (Hinge_*) into the 90 x 53 x 2
 no fin. A "Fold" animation (frame 1 = flight, frame 60 = stowed) is keyed on the hinges
 and exported in the GLB. Set STOWED = True to leave the scene folded.
 
-Outputs (folder set by OUT_DIR): X1_SkyRacer.blend, X1_SkyRacer.glb, X1_SkyRacer_UE5.fbx, X1_Livery.png
+Outputs (folder set by OUT_DIR): X1_SkyRacer_FanTilt.blend, .glb, _UE5.fbx, X1_Livery.png (branch names)
 PteroSim / JSBSim / PX4 / ArduPilot files: run x1_pterosim_kit.py next to this script.
 Run outside Blender (numpy + matplotlib) for preview PNGs and the rule report.
 """
@@ -36,7 +46,7 @@ import numpy as np
 
 # ------------------------------------------------------------------ settings
 OUT_DIR = os.path.join(os.path.expanduser("~"), "X1_SkyRacer")
-OUT_NAME = "X1_SkyRacer"
+OUT_NAME = "X1_SkyRacer_FanTilt"   # branch: never overwrites the main X1_SkyRacer model
 STOWED = False            # True: leave the scene in the folded (hauler) pose
 EXPORT_GLB = True
 EXPORT_FBX_UE5 = True     # Unreal Engine 5 / PteroSim: FBX with UCX_ collision hulls
@@ -71,6 +81,7 @@ MATS = {
 LIV_S, LIV_H = 5.6, 0.95         # metres covered by the texture (length, height)
 Y0, Z0 = -2.80, 0.25             # world y / z at texture u=0 / v=0
 STRIPE_W = 0.022                 # red pinstripe width (m)
+LIVERY_LOWER = "Paint_White"     # paint below the waist line (was "Paint_Black"); the red pinstripe stays
 
 
 def _ss(a, b, x):
@@ -79,8 +90,8 @@ def _ss(a, b, x):
 
 
 def waist(s):
-    """Height (m above Z0) of the black/white split at distance s from the nose:
-    black nose up to the canopy, dips under the cabin, sweeps up to black rear flanks."""
+    """Height (m above Z0) of the waist line (red pinstripe) at distance s from the nose: high at the
+    nose, dipping under the cabin, sweeping up the rear flanks. Below it: LIVERY_LOWER."""
     return 0.48 - 0.16 * _ss(0.4, 2.2, s) + 0.42 * _ss(3.0, 5.0, s)
 
 
@@ -95,7 +106,7 @@ def make_livery(W=4096, H=640, seed=7):
     img = np.empty((H, W, 3))
     img[:] = white
     w = waist(ss)
-    img[hh < w] = black
+    img[hh < w] = np.array(MATS[LIVERY_LOWER]["color"])
     img[(hh >= w) & (hh < w + STRIPE_W)] = red
     # faint panel shut-lines
     lines = (np.abs(((ss + 0.2) % 0.9) - 0.45) > 0.447)
@@ -287,6 +298,8 @@ class Part:
         for attr in ("duct_id", "tank_l"):
             if hasattr(self, attr):
                 setattr(p, attr, getattr(self, attr))
+        if getattr(self, "park", 0.0):
+            p.park = -self.park                                    # mirror image turns the other way
         return p
 
 
@@ -325,7 +338,7 @@ DUCT_R0 = RULES["lift_duct_id_max"] / 2 - 0.0005    # bore
 DUCT_R1 = DUCT_R0 + 0.080                           # outer skin: fat, rounded, tube-like ring
 DUCT_H = 5 * IN                                     # ring height
 DUCT_CORNER = 0.040                                 # rounded, tube-like lips
-DUCT_ZF, DUCT_ZR = 0.48, 1.12                       # front ducts low (chin), rear ducts high (spine)
+DUCT_ZF, DUCT_ZR = 0.48, 0.96                       # front ducts low (chin), rear ducts high (spine)
 DUCT_X = RULES["span_max"] / 2 - DUCT_R1 - 0.002    # outboard edges on the span limit
 DUCT_YF, DUCT_YR = -1.50, 1.20                      # front / rear lift locations
 LIFT_TIP_R = DUCT_R0 - 0.010                        # blade tips: 10 mm gap (teams' choice)
@@ -333,8 +346,70 @@ ROTOR_DZ = 0.035                                    # rotor planes above / below
 BLADES_UPPER, BLADES_LOWER = 13, 17                 # coprime counts for the coaxial pair
 
 # forward-flight ducted pushers at the tail
-FWD_R0, FWD_R1, FWD_HL = 0.33, 0.40, 0.25          # 26 in bore
-FWD_C = (0.45, TAIL_Y - 0.47, 0.90)            # on the raised tail (no fin)
+FWD_R0, FWD_R1, FWD_HL = 0.33, 0.40, 0.25          # 26 in bore (FWD_HL: original half length, layout reference)
+# Pusher duct length (Oct 2026): 0.39 m instead of 0.50 m (L/D 0.59). 9 cm of inlet ahead of the fan
+# (rotor at -0.10), ending 2 cm behind the heat-exchanger rings (+0.18); fan and cooling section unchanged.
+FWD_Z0, FWD_Z1 = -0.19, 0.20                      # duct front / rear along the pusher axis (m from FWD_C)
+# Fan and wing angles (fan-tilt branch, Oct 2026), from the trim of the fully loaded 3,500 lb craft
+# (X1_SkyRacer_FanTilt/): pushers lowered 4 in and tilted so the exhaust points PUSHER_TILT_DEG below the
+# body axis (thrust line tilted up). Lift ducts stay square to the body (level hover and landing); the
+# wings are built at WING_INCIDENCE_DEG so they keep lifting while the body tips slightly nose-down at
+# speed. Duct cant is still available (LIFT_CANT_*_DEG) but a front cant toes the folded ducts into the nose.
+PUSHER_Z = 0.80                                 # pusher centre height (was 0.90)
+PUSHER_TILT_DEG = 10.0                          # exhaust below the body axis (was 0; 20 before the momentum-model optimum)
+LIFT_CANT_F_DEG = 0.0                           # front lift-duct thrust tilted forward (deg)
+LIFT_CANT_R_DEG = 10.0                          # rear lift-duct thrust tilted forward (deg)
+WING_INCIDENCE_DEG = 5.0                        # front + rear wings, leading edge up, about mid-chord (was 0)
+
+
+def _ss01(t):
+    t = min(1.0, max(0.0, t))
+    return t * t * (3 - 2 * t)
+
+
+def wing_incidence(xm, key, fillet_s=None):
+    """Section incidence (deg, LE up) for the front ("F") or rear ("R") wing at span station xm, or at
+    fraction fillet_s across the tip fillet. The whole wing, folding panels included, runs at
+    WING_INCIDENCE_DEG out to the duct ring; only the tip fillet twists, so the tip meets its ring in the
+    ring's own plane (a ring canted c deg forward sits at -c deg), the same joint as the original design."""
+    if key == "R" and REAR_PANEL_FLAT:
+        # rear (real fold hinges): the fixed stub runs at REAR_STUB_INC_DEG, easing to 0 at the fold line
+        # (a y-axis hinge on the upper skin needs an untwisted section there); the folding panel then twists
+        # into the duct ring's plane (-cant) at the duct hinge, and the tip fillet stays in that plane
+        if fillet_s is not None:
+            return -LIFT_CANT_R_DEG * (1.0 if REAR_TIP_TWIST else _ss01(fillet_s / 0.6))
+        inc = REAR_STUB_INC_DEG * (1 - _ss01((xm - (REAR_FOLD_X - 0.15)) / 0.15))
+        if REAR_TIP_TWIST:
+            # outer panel twists from 0 at the wing fold to the ring plane (-cant) at the duct hinge, so the
+            # duct hinge axis lies in the ring's own plane along the whole chord
+            inc -= LIFT_CANT_R_DEG * _ss01((xm - REAR_FOLD_X) / (DUCT_X - DUCT_R1 - REAR_FOLD_X))
+        return inc
+    if fillet_s is None:
+        return WING_INCIDENCE_DEG
+    tip = -(LIFT_CANT_F_DEG if key == "F" else LIFT_CANT_R_DEG)
+    return WING_INCIDENCE_DEG + (tip - WING_INCIDENCE_DEG) * _ss01(fillet_s / 0.6)
+
+
+def wing_incidence_mean():
+    """Area-weighted mean incidence of the two wings (deg), for trim: chord-weighted along each span."""
+    ring_in = DUCT_X - DUCT_R1
+    tot = num = 0.0
+    for key, x0, c0, c1 in (("F", 0.30, 1.05, 0.95), ("R", 0.15, 1.20, 1.00)):     # wing area to the ring
+        for x in np.linspace(x0, ring_in, 200):
+            c = c0 + (c1 - c0) * (x - x0) / (ring_in - x0)
+            tot += c; num += c * wing_incidence(x, key)
+    return num / tot
+FWD_C = (0.45, TAIL_Y - 0.47, PUSHER_Z)        # on the tail (no fin)
+OPF_PUSHER_Z = 0.90                             # where x1_opfplg_blender.py builds the pusher heat exchangers
+
+
+def pusher_tilt(v, weight=1.0):
+    """Move a point built at the OPFPLG model's pusher height down to PUSHER_Z, then rotate it about the
+    pusher axis line (through FWD_C, along X) by the tilt (exhaust down). weight blends both (0..1)."""
+    v = np.array([v[0], v[1], v[2] + (FWD_C[2] - OPF_PUSHER_Z) * weight])
+    d = -math.radians(PUSHER_TILT_DEG) * weight
+    y, z = v[1] - FWD_C[1], v[2] - FWD_C[2]
+    return np.array([v[0], FWD_C[1] + y * math.cos(d) - z * math.sin(d), FWD_C[2] + y * math.sin(d) + z * math.cos(d)])
 
 # fuel (rule book: propane only for racing, 200 lb max onboard, single or multiple tanks)
 PROPANE_LB = 200
@@ -348,8 +423,67 @@ SP_TANK_R, SP_TANK_L = 0.150, 0.92                  # sponson capsule tank: radi
 TX_TANK_R, TX_TANK_L = 0.175, 1.16                  # transverse tank behind the firewall
 ACC_KWH = 7.5                                       # LTO pack in the OPFPLG model (rule book limit 10 kWh nominal)
 
-# cabin / engine bay
-SEAT_X, SEAT_Y = 0.32, -0.95                        # seat cushion centre (driver on the left, +X)
+# cabin (Oct 2026 ergonomic rework). Same outside design; the cabin is resized around real people:
+#  * bare-frame seats at a 25 deg sports-car back angle with the H-point dropped close to the floor,
+#  * the belly bubbled down and out from the toes back under the seats (no change above the wing roots),
+#  * the canopy crown raised to the stowed-height limit and moved back over the heads.
+# Checked on every run against a bare-headed 95th-percentile man and 5th-percentile woman.
+FIREWALL_Y = -0.33                                  # cabin / engine-bay bulkhead (unchanged)
+SEAT_X = 0.30                                       # seat centre lines (driver on the left, +X)
+H_Y, H_Z = -0.95, 0.435                             # H-point (hip joint) of the seated occupant
+SEAT_BACK_DEG = 25                                  # backrest from vertical (was 18; 25-30 = sports car)
+SEAT_PAN_DEG = 12                                   # seat pan rises toward the knees
+SEAT_Y = H_Y + 0.05                                 # seat cushion centre (ballast / downstream tools)
+FLOOR_Z = 0.255                                     # foot-well floor (heel line)
+FOOTWELL = dict(y0=-2.45, y1=-0.40, ramp_f=0.40,    # belly bubble from the toes back under the seats:
+                ramp_r=0.40,                        # y extent, fore / aft blend lengths,
+                z_cut=0.42, z_bot=0.18, n=3.5)      # skin above z_cut untouched, new keel z_bot, boxy tub
+LOUVRE_HW, LOUVRE_CHORD, LOUVRE_LIFT, LOUVRE_T = 0.20, 0.045, 0.024, 0.008   # spine intake slats (m)
+LOUVRE_ROOT_GAP = 0.04                              # slat ends stop this far inboard of the rear wing roots
+BAY_TUB = dict(y0=-0.60, y1=2.05, ramp_f=0.40,     # engine-bay tub (Oct 2026): the belly under the bay is
+               ramp_r=0.60, z_cut=0.70, hw=0.53, n=3.5,   # bubbled down and out like the foot well, no wider
+               z_bot=((-0.60, 0.25), (0.80, 0.25), (1.45, 0.39), (2.05, 0.64)))   # than hw; keel (y, z)
+ENGINE_DZ = -0.13                                   # engine + accumulator lowered (same as x1_opfplg_blender.py)
+CANOPY = dict(y_f=-2.42, y_p=-0.62, y_e=0.55, peak=1.34, w_max=0.66)   # was y_p -0.80, peak 1.27, w 0.62 (stowed limit 1.346)
+KNEE_DEG = 125                                      # comfortable knee angle used to place the heels
+MANIKINS = {  # side-view link lengths (m), SAE J826 / ANSUR II based, bare head (no helmet)
+    "95th-percentile man": dict(torso=0.90, head_c=0.80, head_r=0.10, shoulder=0.55, shoulder_w=0.53,
+                                thigh=0.456, leg=0.459, ankle=0.09, foot=0.22),
+    "5th-percentile woman": dict(torso=0.72, head_c=0.63, head_r=0.09, shoulder=0.43, shoulder_w=0.40,
+                                 thigh=0.38, leg=0.36, ankle=0.075, foot=0.18),
+}
+HEAD_CLEAR_MIN = 1.0 * IN                           # head to canopy, demo / certification flights
+
+
+def _circle_up(P, r1, Q, r2):
+    """Upper intersection (y, z) of circles centred P, Q (the knee between hip and ankle)."""
+    d = np.linalg.norm(Q - P)
+    a = (r1 * r1 - r2 * r2 + d * d) / (2 * d)
+    h = math.sqrt(max(r1 * r1 - a * a, 0.0))
+    m = P + a * (Q - P) / d
+    n = np.array([-(Q - P)[1], (Q - P)[0]]) / d
+    k1, k2 = m + h * n, m - h * n
+    return k1 if k1[1] > k2[1] else k2
+
+
+def posture(mk):
+    """Joint positions (y, z) of a manikin in the seat, heels on the foot-well floor at KNEE_DEG."""
+    a = math.radians(SEAT_BACK_DEG)
+    up = np.array([math.sin(a), math.cos(a)])                   # torso line: aft and up
+    H = np.array([H_Y, H_Z])
+    T, L = mk["thigh"], mk["leg"]
+    d = math.sqrt(T * T + L * L - 2 * T * L * math.cos(math.radians(KNEE_DEG)))
+    dz = FLOOR_Z + mk["ankle"] - H_Z
+    A = H + [-math.sqrt(max(d * d - dz * dz, 0.0)), dz]
+    K = _circle_up(H, T, A, L)
+    s = (A - K) / L                                             # shin direction
+    c, sn = math.cos(math.radians(-95)), math.sin(math.radians(-95))
+    f = np.array([c * s[0] - sn * s[1], sn * s[0] + c * s[1]])  # foot ~95 deg to the shin, toes forward
+    if f[0] > 0:
+        f = -f
+    return dict(H=H, up=up, head=H + up * mk["head_c"], top=H + up * mk["torso"],
+                shoulder=H + up * mk["shoulder"], knee=K, ankle=A, heel=A + [0.03, -mk["ankle"]],
+                toe=A + f * mk["foot"])
 
 
 def capsule(r, l_straight, n_cap=6, segs=28):
@@ -372,9 +506,9 @@ def capsule_litres(r, l_straight):
     return (math.pi * ri ** 2 * l_straight + 4 / 3 * math.pi * ri ** 3) * 1000
 
 
-def lift_duct_part(name, loc):
+def lift_duct_part(name, loc, cant=0.0):
     """Stationary ring + three stator struts + motor pod bulged above and below."""
-    p = Part(name, ["Paint_White", "Silver", "Dark_Metal"], loc, split=60)
+    p = Part(name, ["Paint_White", "Silver", "Dark_Metal"], loc, (math.radians(cant), 0, 0), split=60)
     p.duct_id = 2 * DUCT_R0
     ring = rounded_rect(DUCT_R0, DUCT_R1, -DUCT_H / 2, DUCT_H / 2, DUCT_CORNER, n=5)
     mid = (DUCT_R0 + DUCT_R1) / 2
@@ -391,10 +525,10 @@ def lift_duct_part(name, loc):
     return p
 
 
-def lift_rotor_part(name, loc, n, upper=True, hand=1):
+def lift_rotor_part(name, loc, n, upper=True, hand=1, cant=0.0):
     """One rotor of the coaxial pair: hub ring around the motor pod + n blades.
     hand = +1 / -1 sets which way the blades are pitched, so each fan pushes air down for its own spin."""
-    p = Part(name, ["Dark_Metal", "Silver"], loc, split=50)
+    p = Part(name, ["Dark_Metal", "Silver"], loc, (math.radians(cant), 0, 0), split=50)
     sgn = 1 if upper else -1
     z = sgn * ROTOR_DZ
     p.add(lathe(rounded_rect(0.150, 0.185, z - 0.018, z + 0.018, 0.006, n=2), 40), mat=1)
@@ -457,6 +591,11 @@ def opfplg_external_parts():
         p = Part(o.name, mats, smooth=True, split=40)
         org = np.asarray(o.origin, float)
         p.V = [np.asarray(v, float) + org for v in o.mesh.v]
+        if o.name.startswith("OPF_Fan_HX"):       # heat exchangers ride with the fans
+            p.V = [pusher_tilt(v) for v in p.V]
+        elif "Vapour_Line" in o.name or "Liquid_Return" in o.name:
+            # bend the last 0.75 m of each propane line onto the moved heat-exchanger rings
+            p.V = [pusher_tilt(v, min(1.0, max(0.0, (v[1] - (FWD_C[1] - 0.75)) / 0.70))) for v in p.V]
         p.F = [tuple(f) for f in o.mesh.f]
         p.M = [mats.index(m) for m in o.mesh.m]
         p.opfplg = o.coll
@@ -465,6 +604,47 @@ def opfplg_external_parts():
 
 
 BODY_X = None
+REAR_PANEL_FLAT = True
+REAR_STUB_INC_DEG = 9.0                        # rear stub incidence (deg): makes up the lift of the twisted outer panel
+REAR_TIP_TWIST = True                          # rear folding panel twists to the ring plane by the duct hinge
+REAR_DUCT_RAISE = 0.035                        # rear duct + rotors sit this much higher on the wing tip (m)
+REAR_LIP_SCALLOP = True                        # trim the rear ducts' inboard lower lip flat at the fold hinge
+REAR_ROTOR_PARK_DEG = 2.0                      # rear lower rotors stop at this index angle before folding
+REAR_PANEL_TR = 0.10                          # rear folding panel thickness / chord (stub 0.09, eased)
+REAR_FOLD_MAX_DEG = 90.0                      # rear wing fold limit (90 = panel vertical)
+REAR_LIP_CLEAR = 0.006                         # clearance below the hinge line (m)
+REAR_FOLD_X = 0.78                             # rear wing fold line (RW_HX), also used by wing_incidence
+TAIL_SPINE_HW = 0.085                          # tail spine half-width between the pusher bores (bore starts 0.12)
+
+
+def footwell(v, bot):
+    """Belly bubbles: the foot well under the cabin, then the engine-bay tub."""
+    return _bubble(_bubble(v, bot, FOOTWELL), bot, BAY_TUB)
+
+
+def _bubble(v, bot, fw):
+    """Bubble the belly down and out: below z_cut the skin is blended toward a boxier
+    tub reaching z_bot, smoothly faded in and out along Y. Nothing above z_cut (wing roots, sills) moves."""
+    x0, y, z0 = v
+    if not (fw["y0"] < y < fw["y1"]) or z0 >= fw["z_cut"]:
+        return v
+    u = min((y - fw["y0"]) / fw["ramp_f"], (fw["y1"] - y) / fw["ramp_r"], 1.0)
+    k = u * u * (3 - 2 * u)
+    a = min(BODY_X_AT(y, fw["z_cut"]), fw.get("hw", 9.0))        # tub meets the original skin at z_cut
+    zb_ = fw["z_bot"]
+    if not isinstance(zb_, (int, float)):                        # keel line given as (y, z) points
+        zb_ = float(np.interp(y, [q[0] for q in zb_], [q[1] for q in zb_]))
+    b = fw["z_cut"] - min(zb_, bot)
+    phi = math.atan2(fw["z_cut"] - z0, abs(x0))                  # same polar angle about (0, z_cut)
+    c_, s_ = abs(math.cos(phi)), abs(math.sin(phi))
+    xt = math.copysign(a * c_ ** (2 / fw["n"]), x0) if x0 else 0.0
+    zt = fw["z_cut"] - b * s_ ** (2 / fw["n"])
+    if math.hypot(xt, fw["z_cut"] - zt) < math.hypot(x0, fw["z_cut"] - z0):
+        return v                                                 # bubble only ever adds volume
+    return (x0 + k * (xt - x0), y, z0 + k * (zt - z0))
+
+
+BODY_X_AT = None
 
 
 def build_parts():
@@ -481,8 +661,14 @@ def build_parts():
         [-0.50, 0.72, 0.90, 0.32, 2.4, 2.6],
         [0.40, 0.68, 1.06, 0.38, 2.4, 2.6],
         [1.20, 0.56, 1.12, 0.50, 2.3, 2.4],
-        [1.90, 0.38, 1.10, 0.66, 2.2, 2.2],
-        [TAIL_Y, 0.18, 1.04, 0.82, 2.2, 2.2]]
+        # aft body: full engine-bay width to y 1.50, then smooth S-ramps narrow it to a slim spine
+        # between the pushers, so each pusher swallows the side flow instead of the fuselage
+        # running through its bore; the duct inner walls merge into the spine (their mount)
+        [1.50, 0.53, 1.12, 0.54, 2.3, 2.4],
+        [1.78, 0.30, 1.11, 0.60, 2.2, 2.3],
+        [2.00, TAIL_SPINE_HW, 1.10, 0.64, 2.2, 2.2],
+        [2.55, TAIL_SPINE_HW, 1.07, 0.72, 2.2, 2.2],
+        [TAIL_Y, 0.04, 1.04, 0.82, 2.2, 2.2]]
     samples = catmull_rom(keys, 7)
     sy = np.array([q[0] for q in samples])
     col = lambda i: [q[i] for q in samples]
@@ -517,6 +703,8 @@ def build_parts():
         n = nt if q >= 0 else nbt
         return hw * (1 - abs(q) ** n) ** (1 / n)
     BODY_X = _body_x_frozen
+    global BODY_X_AT
+    BODY_X_AT = _body_x_frozen
     rings, nc = [], 48
     for y, hw, top, bot, ntop, nbot in samples:
         zc, hh = (top + bot) / 2, (top - bot) / 2
@@ -527,14 +715,14 @@ def build_parts():
             n = ntop if s >= 0 else nbot
             ring.append((hw * math.copysign(abs(c) ** (2 / n), c), y,
                          zc + hh * math.copysign(abs(s) ** (2 / n), s)))
-        rings.append(ring)
+        rings.append([footwell(v, bot) for v in ring])
     body = Part("Body", ["Livery"], split=60)
     body.add(loft(rings, start=(0, NOSE_Y, 0.60), end="c"), uv=body_uv)
     parts.append(body)
 
     # ---- canopy: dark glass helmet-visor sitting on the sills, starting just behind the nose tip,
     #      peaking over the seats, diving into the spine behind the firewall
-    y_f, y_p, y_e, peak, w_max = -2.42, -0.80, 0.55, 1.27, 0.62
+    y_f, y_p, y_e, peak, w_max = (CANOPY[k] for k in ("y_f", "y_p", "y_e", "peak", "w_max"))
 
     def crown_w(y):
         bt = body_z(0, y)
@@ -565,17 +753,76 @@ def build_parts():
                      for a in np.linspace(0.05, math.pi - 0.05, 18)], 0.022, 8))
     parts.append(frame)
 
-    # ---- two side-by-side bare-frame seats (3.1/3.4)
-    seat = Part("Seat_L", ["Seat"], smooth=False)
-    seat.add(box((SEAT_X, SEAT_Y, 0.42), (0.44, 0.50, 0.07)))
-    seat.add(box((SEAT_X, SEAT_Y + 0.33, 0.70), (0.44, 0.08, 0.52), rot_x(math.radians(-18))))
-    seat.add(box((SEAT_X, SEAT_Y + 0.42, 1.00), (0.20, 0.08, 0.12), rot_x(math.radians(-18))))
+    # ---- two side-by-side bare-frame seats (3.1/3.4), reclined, built around the H-point:
+    #      pan surface 95 mm under the hip joint, backrest surface 135 mm behind it (SAE J826 manikin)
+    ab, ap = math.radians(SEAT_BACK_DEG), math.radians(SEAT_PAN_DEG)
+    H2 = np.array([H_Y, H_Z])
+    up = np.array([math.sin(ab), math.cos(ab)])                    # along the backrest (y, z)
+    aft = np.array([math.cos(ab), -math.sin(ab)])                  # backrest normal, pointing aft
+    fwd = np.array([-math.cos(ap), math.sin(ap)])                  # along the pan, toward the knees
+    P0 = H2 - 0.095 * np.array([math.sin(ap), math.cos(ap)])
+    B0 = H2 + 0.135 * aft
+    t_ = np.linalg.solve(np.array([fwd, -up]).T, B0 - P0)[0]
+    bight = P0 + t_ * fwd                                          # where the pan meets the backrest
+    def yz(q, x=SEAT_X):
+        return (x, float(q[0]), float(q[1]))
+    def fz(y):                                                     # floor-plate top: flat heel line, rising aft
+        return FLOOR_Z - 0.008 + max(0.0, y + 1.30) * 0.12
+    seat = Part("Seat_L", ["Seat", "Dark_Metal"], smooth=False)
+    PAN_L, BACK_L, T_ = 0.50, 0.62, 0.035
+    seat.add(box(yz(bight + fwd * PAN_L / 2 - np.array([math.sin(ap), math.cos(ap)]) * T_ / 2),
+                 (0.36, PAN_L, T_), rot_x(-ap)))
+    seat.add(box(yz(bight + up * BACK_L / 2 + aft * T_ / 2), (0.38, T_, BACK_L), rot_x(-ab)))
+    hd = posture(MANIKINS["95th-percentile man"])["head"]
+    seat.add(box(yz(hd + aft * (MANIKINS["95th-percentile man"]["head_r"] + 0.035)), (0.24, 0.05, 0.18),
+                 rot_x(-ab)))                                      # headrest behind the head
+    for sx in (-0.15, 0.15):                                       # bare tube frame rails
+        x_ = SEAT_X + sx
+        seat.add(sweep([yz(bight + fwd * PAN_L, x_), yz(bight, x_), yz(bight + up * BACK_L, x_)], 0.014, 8),
+                 mat=1)
+        yl = float(bight[0] + fwd[0] * (PAN_L - 0.05))
+        seat.add(cylinder(yz(bight + fwd * (PAN_L - 0.05), x_), (x_, yl, fz(yl)), 0.014, 8), mat=1)   # front leg
     parts += [seat, seat.mirrored("Seat_R")]
+    empties["Seat_L_H_Point"] = (SEAT_X, H_Y, H_Z)
+    empties["Seat_R_H_Point"] = (-SEAT_X, H_Y, H_Z)
+
+    # foot-well floor over the bubbled belly, with an adjustable heel rest / toe board per seat
+    fl = Part("Cockpit_Floor", ["Dark_Metal"], smooth=False)
+    ring_y = np.array([r[0][1] for r in rings])
+
+    def skin_hw(y, z):
+        """Half-width of the (bubbled) skin at height z, from the nearest body ring."""
+        r = rings[int(np.argmin(abs(ring_y - y)))]
+        best = 0.0
+        for p_, q_ in zip(r, r[1:] + r[:1]):
+            if p_[0] >= 0 and q_[0] >= 0 and (p_[2] - z) * (q_[2] - z) <= 0 and p_[2] != q_[2]:
+                best = max(best, p_[0] + (q_[0] - p_[0]) * (z - p_[2]) / (q_[2] - p_[2]))
+        return best
+    y_fl0 = next(y for y in np.linspace(-2.45, -1.8, 66)
+                 if min(v[2] for v in rings[int(np.argmin(abs(ring_y - y)))]) < FLOOR_Z - 0.035)
+    ys_ = np.linspace(y_fl0, bight[0], 16)
+    floor_hw = lambda y: skin_hw(y, fz(y) - 0.006) - 0.04
+    frings = [[(-floor_hw(y), y, fz(y) - 0.006), (floor_hw(y), y, fz(y) - 0.006),
+               (floor_hw(y), y, fz(y)), (-floor_hw(y), y, fz(y))] for y in ys_]
+    fl.add(loft(frings, start="c", end="c"))
+    parts.append(fl)
+    pm = posture(MANIKINS["95th-percentile man"])
+    pw = posture(MANIKINS["5th-percentile woman"])
+    rest = Part("Footrest_L", ["Paint_Black", "Dark_Metal"], smooth=False)
+    for x_ in (SEAT_X - 0.12, SEAT_X + 0.12):                      # rail from the man's heel to the woman's
+        rest.add(box((x_, (pm["heel"][0] + pw["heel"][0]) / 2, FLOOR_Z + 0.008),
+                     (0.025, abs(pw["heel"][0] - pm["heel"][0]) + 0.16, 0.016)), mat=1)
+    tb = (pm["heel"] + pm["toe"]) / 2
+    ft = (pm["toe"] - pm["heel"]) / np.linalg.norm(pm["toe"] - pm["heel"])
+    rest.add(box((SEAT_X, float(tb[0]), float(tb[1]) - 0.012), (0.26, float(np.linalg.norm(pm["toe"] - pm["heel"])), 0.012),
+                 rot_x(math.atan2(ft[1], ft[0]))), mat=0)
+    parts += [rest, rest.mirrored("Footrest_R")]
 
     # ---- engine bay under the raised spine, firewall to the pushers
-    BAY_Y0, BAY_Y1 = SEAT_Y + 0.62, FWD_C[1] - FWD_HL - 0.05
+    BAY_Y0, BAY_Y1 = FIREWALL_Y, FWD_C[1] - FWD_HL - 0.05
     firewall = Part("Firewall", ["Dark_Metal"], smooth=False)
     firewall.add(box((0, BAY_Y0, 0.66), (0.90, 0.03, 0.56)))
+    firewall.add(box((0, BAY_Y0, 0.37), (0.56, 0.03, 0.06)))        # down to the bay tub floor
     parts.append(firewall)
     # transverse propane tank right behind the firewall
     TX_Y = BAY_Y0 + 0.03 + TX_TANK_R + 0.02
@@ -588,15 +835,11 @@ def build_parts():
     # (162 x Toshiba SCiB 20 Ah, 7.5 kWh, 770 x 668 x 134 mm case on the belly floor under the bay).
     ENG_Y0 = ACC_Y0 + 0.02
     engine = Part("Engine_Placeholder", ["Dark_Metal", "Silver"], smooth=False)
-    engine.add(box((0, (ENG_Y0 + 1.50) / 2, 0.78), (1.00, 1.50 - ENG_Y0, 0.46)), mat=0)
+    engine.add(box((0, (ENG_Y0 + 1.50) / 2, 0.78 + ENGINE_DZ), (1.00, 1.50 - ENG_Y0, 0.46)), mat=0)
     for x in (-0.24, 0.24):
-        engine.add(cylinder((x, ENG_Y0 + 0.05, 0.92), (x, 1.40, 0.92), 0.13, 16), mat=1)
+        engine.add(cylinder((x, ENG_Y0 + 0.05, 0.92 + ENGINE_DZ), (x, 1.40, 0.92 + ENGINE_DZ), 0.13, 16), mat=1)
     parts.append(engine)
-    louvres = Part("Engine_Louvres", ["Paint_Black"], smooth=False)
-    for y in np.arange(0.70, 1.60, 0.085):
-        louvres.add(box((0, y, body_z(0, y) + 0.010), (0.40, 0.05, 0.010), rot_x(math.radians(-28))))
-    parts.append(louvres)
-    empties["Engine_Bay"] = (0.0, (ENG_Y0 + 1.50) / 2, 0.78)
+    empties["Engine_Bay"] = (0.0, (ENG_Y0 + 1.50) / 2, 0.78 + ENGINE_DZ)
     # side intake blocks outboard of the engine bay removed (Oct 2026)
 
     # ---- duct mounts: low front arms off the chin, high rear wing off the upper fuselage,
@@ -619,19 +862,22 @@ def build_parts():
 
     WING_EMBED = 0.005                                            # wing roots end 5 mm inside the skin
 
-    def duct_wing(name, yc, zc, root_x, chord_root, chord_tip, tr, x_from, x_to=None, n=10, trim=False):
+    def duct_wing(name, yc, zc, root_x, chord_root, chord_tip, tr, x_from, x_to=None, n=10, trim=False, key="F"):
         """Wing segment from x_from to x_to (None = out to the ring, tip following its inboard curve).
         trim=True: the inboard end follows the fuselage skin instead of running on inside the body."""
         w = Part(name, ["Paint_White"], split=50)
-        sec = airfoil(1.0, tr)
         span = (DUCT_X - DUCT_R1) - root_x
         rings_w = []
         for s_ in np.linspace(0, 1, n):
             ring_pts = []
             xm = x_from + ((x_to if x_to is not None else DUCT_X - DUCT_R1) - x_from) * s_
             ch = chord_root + (chord_tip - chord_root) * min(1.0, (xm - root_x) / span)
+            inc = math.radians(wing_incidence(xm, key, s_ if x_from >= DUCT_X - DUCT_R1 - 1e-6 else None))
+            sec = airfoil(1.0, tr(xm) if callable(tr) else tr)
+            ci, si = math.cos(inc), math.sin(inc)
             for dy, dz in sec:
-                y, z = yc - ch / 2 + dy * ch, zc + dz * ch
+                u, v_ = -ch / 2 + dy * ch, dz * ch                # chord position, thickness offset
+                y, z = yc + u * ci + v_ * si, zc - u * si + v_ * ci   # incidence about mid-chord, LE up
                 b_ = x_to if x_to is not None else wing_tip_x(y, yc)
                 a_ = x_from
                 if trim:                                          # start at the skin, never inside the body
@@ -645,13 +891,13 @@ def build_parts():
     # ---- fold kinematics. Each side: wing hinge (axis along Y) + duct hinge at the wing/ring joint.
     #      Front: wing folds DOWN, duct stands on edge beside the nose (bottom just off the ground).
     #      Rear:  wing folds UP,   duct hangs on edge beside the engine bay (top under 53 in).
+    #      Every hinge axis sits on the skin on the INSIDE of its fold (front wing: lower skin, front duct:
+    #      upper, rear wing: upper, rear duct: lower), so the panels open apart instead of passing
+    #      through each other. Axis heights and fold angles are set at the end of build_parts().
     HINGES.clear()
     ring_in = DUCT_X - DUCT_R1
-    FW_HX, RW_HX = 0.64, 0.87                                     # wing hinge lines (fixed stubs inboard)
-    zt_f = RULES["folded_height_max"] - 2 * DUCT_R1 - 0.003       # front duct hinge height when stowed
-    beta = math.asin((DUCT_ZF - zt_f) / (ring_in - FW_HX))
-    zt_r = RULES["folded_height_max"] - 0.025                     # rear duct hinge height when stowed
-    alpha = math.asin((zt_r - DUCT_ZR) / (ring_in - RW_HX))
+    FW_HX, RW_HX = 0.70, REAR_FOLD_X    # wing hinge lines (fixed stubs inboard)
+    beta = alpha = 1.2                                            # placeholders; solved at the end
     for side, sgn in (("L", 1), ("R", -1)):
         HINGES[f"Hinge_FrontWing_{side}"] = dict(loc=np.array([sgn * FW_HX, DUCT_YF, DUCT_ZF]), parent=None,
                                                  angle=sgn * beta)
@@ -666,18 +912,52 @@ def build_parts():
     # trimmed where they enter the fuselage: the root stub fills from the skin out to the fold line, and the
     # folding panel starts at the fold line or the skin, whichever is further out
     fs = duct_wing("Front_Wing_Root_L", DUCT_YF, DUCT_ZF, 0.30, 1.05, 0.95, 0.09, 0.30, FW_HX, n=4, trim=True)
-    fp = duct_wing("Front_Wing_L", DUCT_YF, DUCT_ZF, 0.30, 1.05, 0.95, 0.09, FW_HX, ring_in, n=6, trim=True)
+    fp = duct_wing("Front_Wing_L", DUCT_YF, DUCT_ZF, 0.30, 1.05, 0.95, 0.09, FW_HX, ring_in, n=10, trim=True)
     fp.parent = "Hinge_FrontWing_L"
     ff = duct_wing("Front_Wing_Fillet_L", DUCT_YF, DUCT_ZF, 0.30, 1.05, 0.95, 0.09, ring_in, n=4)
     ff.parent = "Hinge_FrontDuct_L"                               # curved tip blends into the ring, folds with it
     # rear wing: high, off the upper rear fuselage - fixed stub, outer panel folds
-    rs = duct_wing("Rear_Wing_Stub_L", DUCT_YR, DUCT_ZR - 0.01, 0.15, 1.20, 1.00, 0.09, 0.15, RW_HX, n=8)
-    rp = duct_wing("Rear_Wing_L", DUCT_YR, DUCT_ZR - 0.01, 0.15, 1.20, 1.00, 0.09, RW_HX, ring_in, n=4)
+    def rear_tr(xm):                                              # thinner outer rear wing: smaller fold offset
+        return 0.09 + (REAR_PANEL_TR - 0.09) * _ss01((xm - (RW_HX - 0.25)) / 0.25)
+    rs = duct_wing("Rear_Wing_Stub_L", DUCT_YR, DUCT_ZR - 0.01, 0.15, 1.20, 1.00, rear_tr, 0.15, RW_HX, n=12, key="R")
+    rp = duct_wing("Rear_Wing_L", DUCT_YR, DUCT_ZR - 0.01, 0.15, 1.20, 1.00, rear_tr, RW_HX, ring_in, n=8, key="R")
     rp.parent = "Hinge_RearWing_L"
-    rf = duct_wing("Rear_Wing_Fillet_L", DUCT_YR, DUCT_ZR - 0.01, 0.15, 1.20, 1.00, 0.09, ring_in, n=4)
+    rf = duct_wing("Rear_Wing_Fillet_L", DUCT_YR, DUCT_ZR - 0.01, 0.15, 1.20, 1.00, REAR_PANEL_TR, ring_in, n=4, key="R")
     rf.parent = "Hinge_RearDuct_L"
     for w in (fs, fp, ff, rs, rp, rf):
         parts += [w, w.mirrored(w.name[:-1] + "R")]
+
+    # ---- engine-bay intake louvres on the spine: each slat is bent to the crown across its whole width
+    #      (aft edge on the skin, leading edge raised), and stops short of where the rear wing roots come
+    #      up through the skin
+    louvres = Part("Engine_Louvres", ["Paint_Black"], smooth=False)
+    stub_v = np.array(rs.V)
+    for y in np.arange(0.70, 1.60, 0.085):
+        ya, yf = y + LOUVRE_CHORD / 2, y - LOUVRE_CHORD / 2
+        near = stub_v[(stub_v[:, 1] > yf - 0.03) & (stub_v[:, 1] < ya + 0.03)]
+        proud = [v[0] for v in near if v[2] > body_z(v[0], v[1]) - 0.025]   # roots at or just under the skin
+        hw = min(LOUVRE_HW, (min(proud) if proud else 9.0) - LOUVRE_ROOT_GAP)
+        if hw < 0.05:
+            continue
+        slat = []
+        for x in np.linspace(-hw, hw, 21):
+            a_top = np.array([x, ya, body_z(x, ya) + 0.002])
+            f_top = np.array([x, yf, body_z(x, yf) + LOUVRE_LIFT])
+            slat.append([a_top, f_top, f_top - [0, 0, LOUVRE_T], a_top - [0, 0, LOUVRE_T]])
+        louvres.add(loft(slat, start="c", end="c"))
+    parts.append(louvres)
+    def skin_z(parts_, x0, top):
+        zz = [v[2] for q in parts_ for v in q.V if abs(v[0] - x0) < 0.004]
+        return (max(zz) + 0.003) if top else (min(zz) - 0.003)
+    HINGE_Z = dict(FW=skin_z([fs, fp], FW_HX, False), FD=skin_z([fp, ff], ring_in, True),
+                   RW=skin_z([rs, rp], RW_HX, True), RD=skin_z([rp, rf], ring_in, False))
+    cr = math.radians(LIFT_CANT_R_DEG)
+    RD_N = rot_x(cr) @ np.array([0, 0, 1.0]) if REAR_TIP_TWIST else np.array([0, 0, 1.0])   # ring normal
+    RD_AX = rot_x(cr) @ np.array([0, 1.0, 0]) if REAR_TIP_TWIST else np.array([0, 1.0, 0])  # hinge axis
+    c0 = np.array([ring_in, DUCT_YR, DUCT_ZR - 0.01])
+    wmin = min(float((v - c0) @ RD_N) for q in (rp, rf) for v in q.V if abs(v[0] - ring_in) < 0.004) - 0.003
+    RD_LOC = c0 + wmin * RD_N                                     # on the lower skin line at the tip
+    HINGE_Z["RD"] = float(RD_LOC[2])
     swoosh = Part("Flank_Swoosh_L", ["Paint_White"], split=60)
     path = []
     for t in np.linspace(0, 1, 26):
@@ -689,23 +969,27 @@ def build_parts():
 
     # ---- 4 lift locations x coaxial counter-rotating pair = 8 lift fans (3.6)
     for key, yc, zc in (("F", DUCT_YF, DUCT_ZF), ("R", DUCT_YR, DUCT_ZR)):
-        C = np.array([DUCT_X, yc, zc])
-        d = lift_duct_part(f"Duct_{key}L", C)
+        cant = LIFT_CANT_F_DEG if key == "F" else LIFT_CANT_R_DEG
+        C = np.array([DUCT_X, yc, zc]) + ((rot_x(math.radians(cant)) @ np.array([0, 0, REAR_DUCT_RAISE]))
+                                          if key == "R" else 0)
+        d = lift_duct_part(f"Duct_{key}L", C, cant)
         # the rear pair spins opposite to the front pair (diagonal torque balance), so its blades are
         # pitched the other way; the right side is a mirror image, which flips pitch and spin together
         hand = 1 if key == "F" else -1
-        up = lift_rotor_part(f"Rotor_{key}L_Upper", C, BLADES_UPPER, True, hand)
-        lo = lift_rotor_part(f"Rotor_{key}L_Lower", C, BLADES_LOWER, False, hand)
+        up = lift_rotor_part(f"Rotor_{key}L_Upper", C, BLADES_UPPER, True, hand, cant)
+        lo = lift_rotor_part(f"Rotor_{key}L_Lower", C, BLADES_LOWER, False, hand, cant)
+        if key == "R":
+            lo.park = math.radians(REAR_ROTOR_PARK_DEG)            # stow index: blades clear the folded panel
         for p in (d, up, lo):
             p.parent = "Hinge_FrontDuct_L" if key == "F" else "Hinge_RearDuct_L"
             parts.append(p)
             parts.append(p.mirrored(p.name.replace("L_", "R_") if "L_" in p.name else p.name[:-1] + "R"))
 
     # ---- twin ducted pushers (forward flight, 3.6.2) on the raised tail
-    trot = (-math.pi / 2, 0, 0)
+    trot = (-(math.pi / 2 + math.radians(PUSHER_TILT_DEG)), 0, 0)   # fan axis aft, exhaust tilted down
     th = Part("Thruster_L", ["Paint_White", "Paint_Red", "Paint_Black", "Dark_Metal"], FWD_C, trot, split=60)
     th.duct_id = 2 * FWD_R0
-    prof = rounded_rect(FWD_R0, FWD_R1, -FWD_HL, FWD_HL, 0.03, n=4, outer_z=(-0.17, -0.14, 0.10))
+    prof = rounded_rect(FWD_R0, FWD_R1, FWD_Z0, FWD_Z1, 0.03, n=4, outer_z=(-0.17, -0.14, 0.10))
     pick = band_mat([(-0.17, 1), (-0.14, 0), (0.10, 2)])
     th.add(lathe(prof, 48), mat=lambda c: pick(c, (FWD_R0 + FWD_R1) / 2 + 0.01, 3, 0))
     th.add(cylinder((0, 0, 0.0), (0, 0, 0.22), 0.11, 20), mat=3)
@@ -733,6 +1017,30 @@ def build_parts():
     filler = Part("Fuel_Filler_L", ["Paint_Red", "Silver"], smooth=False)
     filler.add(cylinder((SP_XC + 0.03, -0.55, SP_ZC + SP_B - 0.02), (SP_XC + 0.03, -0.55, SP_ZC + SP_B + 0.005),
                         0.035, 16), mat=0)
+    # minimal fairing: one slim streamlined pylon per side ties the sponson (tank + wheels) to the fuselage
+    # where they come closest, along the top of the sponson; the ends run into both skins
+    PY_Y0, PY_Y1, PY_Z, PY_T = -0.72, 0.30, 0.50, 0.06       # chord ends, height, thickness / chord
+    def sponson_in_x(y, z):
+        t = (y - SP_Y0) / (SP_Y1 - SP_Y0)
+        k = max((1 - abs(2 * t - 1) ** 3.0), 0.0) ** (1 / 3.0)
+        q = min(abs(z - SP_ZC) / max(SP_B * k, 1e-6), 1.0)
+        return SP_XC - SP_A * k * (1 - q ** 2.6) ** (1 / 2.6)
+    ch = PY_Y1 - PY_Y0
+    th_ = np.linspace(0, math.pi, 13)
+    cs = 0.5 * (1 - np.cos(th_))
+    yt = 5 * PY_T * (0.2969 * np.sqrt(cs) - 0.126 * cs - 0.3516 * cs ** 2 + 0.2843 * cs ** 3 - 0.1036 * cs ** 4)
+    sec = [(c, t) for c, t in zip(cs, yt)][::-1] + [(c, -t) for c, t in zip(cs, yt)][1:-1]
+    py_rings = []
+    for s_ in np.linspace(0, 1, 5):
+        ring = []
+        for c, t in sec:
+            y, z = PY_Y0 + c * ch, PY_Z + t * ch
+            a_, b_ = skin_hw(y, z) - 0.006, sponson_in_x(y, z) + 0.006
+            ring.append((a_ + (max(b_, a_) - a_) * s_, y, z))
+        py_rings.append(ring)
+    pylon = Part("Sponson_Pylon_L", ["Paint_White"], split=50)
+    pylon.add(loft(py_rings, start="c", end="c"))
+    parts += [pylon, pylon.mirrored("Sponson_Pylon_R")]
     parts += [sp, sp.mirrored("Sponson_R"), tank, tank.mirrored("Tank_Sponson_R"),
               filler, filler.mirrored("Fuel_Filler_R")]
 
@@ -761,15 +1069,68 @@ def build_parts():
                      .add(box((sgn * SP_XC, (SP_Y0 + SP_Y1) / 2, SP_ZC), (2 * SP_A, SP_Y1 - SP_Y0, 2 * SP_B))))
     for key, yc, zc in (("F", DUCT_YF, DUCT_ZF), ("R", DUCT_YR, DUCT_ZR)):
         for sgn, side in ((1, "L"), (-1, "R")):
-            c = np.array([sgn * DUCT_X, yc, zc])
+            c = np.array([sgn * DUCT_X, yc, zc]) + ((rot_x(math.radians(LIFT_CANT_R_DEG)) @
+                                                     np.array([0, 0, REAR_DUCT_RAISE])) if key == "R" else 0)
             col = Part(f"COL_Duct_{key}{side}", [], smooth=False, coll="col")
-            col.add(cylinder(c - [0, 0, 0.15], c + [0, 0, 0.15], DUCT_R1, 10))
+            ax_ = rot_x(math.radians(LIFT_CANT_F_DEG if key == "F" else LIFT_CANT_R_DEG)) @ np.array([0, 0, 0.15])
+            col.add(cylinder(c - ax_, c + ax_, DUCT_R1, 10))
             col.parent = f"Hinge_{'Front' if key == 'F' else 'Rear'}Duct_{side}"
             parts.append(col)
 
     parts += engine_ext                     # exhaust tailpipe, external propane lines, pusher heat exchangers
 
-    empties["Cam_Driver_Eye"] = (SEAT_X, SEAT_Y + 0.05, 1.08)
+    eye = pm["head"] + np.array([-0.08 * math.cos(ab), 0.0]) - pm["up"] * 0.02   # eyes ahead of head centre
+    empties["Cam_Driver_Eye"] = (SEAT_X, float(eye[0]), float(eye[1]))
+
+    # fold angles with the hinge axes on the skins: bisect the wing fold so the folded craft's top stays
+    # 3 mm under the 53 in limit; the duct then turns to stand on edge (front -90 deg net, rear +90 deg net)
+    def set_hinges(beta_, alpha_):
+        for side, sgn in (("L", 1), ("R", -1)):
+            HINGES[f"Hinge_FrontWing_{side}"] = dict(loc=np.array([sgn * FW_HX, DUCT_YF, HINGE_Z["FW"]]), parent=None,
+                                                     angle=sgn * beta_)
+            HINGES[f"Hinge_FrontDuct_{side}"] = dict(loc=np.array([sgn * ring_in, DUCT_YF, HINGE_Z["FD"]]),
+                                                     parent=f"Hinge_FrontWing_{side}", angle=-sgn * (math.pi / 2 + beta_))
+            HINGES[f"Hinge_RearWing_{side}"] = dict(loc=np.array([sgn * RW_HX, DUCT_YR, HINGE_Z["RW"]]), parent=None,
+                                                    angle=-sgn * alpha_)
+            HINGES[f"Hinge_RearDuct_{side}"] = dict(loc=RD_LOC * [sgn, 1, 1], axis=RD_AX,
+                                                    parent=f"Hinge_RearWing_{side}", angle=sgn * min(math.pi, math.pi / 2 + alpha_))
+    if REAR_LIP_SCALLOP:
+        scallop_rear_lips(parts, RD_LOC, RD_N, ring_in, RD_AX)
+        for q in [q for q in parts if q.name in ("Duct_RL", "Rear_Wing_Fillet_L")]:   # right side = mirror
+            r_ = [x for x in parts if x.name == q.name[:-1] + "R"][0]
+            r_.V = [v * [-1, 1, 1] for v in q.V]
+    front = [q for q in parts if q.coll == "main" and q.parent and "Front" in q.parent and q.parent.endswith("_L")]
+    rear = [q for q in parts if q.coll == "main" and q.parent and "Rear" in q.parent and q.parent.endswith("_L")]
+    top_lim = RULES["folded_height_max"] - 0.003
+    def solve_fold(group, which):
+        lo, hi = 0.2, 1.55
+        for _ in range(40):
+            mid = 0.5 * (lo + hi)
+            set_hinges(mid if which == "F" else beta, mid if which == "R" else alpha)
+            top = max(posed(q, True)[:, 2].max() for q in group)
+            # front: a bigger fold drops the duct (lower top); rear: a bigger fold raises it
+            if (top > top_lim) == (which == "F"):
+                lo = mid
+            else:
+                hi = mid
+        return hi if which == "F" else lo
+    beta, alpha = 1.2, 1.2
+    beta = solve_fold(front, "F")
+    # rear: the hinge is on the upper skin, so a fold just past vertical leans the short panel over the
+    # engine bay and brings the hanging duct back inboard; pick the narrowest fold that stays under the
+    # height limit and off the ground
+    best_a = None
+    for a_ in np.radians(np.arange(45.0, REAR_FOLD_MAX_DEG + 0.01, 0.5)):
+        # past vertical the duct's own fold stays at 180 deg (it would otherwise pass through the panel), so
+        # the panel leans in over the engine bay and the hanging duct tilts its bottom inboard
+        set_hinges(beta, a_)
+        Vr = np.vstack([posed(q, True) for q in rear])
+        if Vr[:, 2].max() > top_lim or Vr[:, 2].min() < 0.03:
+            continue
+        if best_a is None or Vr[:, 0].max() < best_a[1]:
+            best_a = (a_, Vr[:, 0].max())
+    alpha = best_a[0]
+    set_hinges(beta, alpha)
     empties["Cam_Chase"] = (0.0, 8.0, 2.4)
     return parts, empties
 
@@ -782,14 +1143,83 @@ def hinge_chain(name):
     return chain                                                  # innermost first
 
 
+def axis_rot(ax, a):
+    """Rotation matrix by angle a about unit axis ax (right-handed)."""
+    ax = np.asarray(ax, float) / np.linalg.norm(ax)
+    K = np.array([[0, -ax[2], ax[1]], [ax[2], 0, -ax[0]], [-ax[1], ax[0], 0]])
+    return np.eye(3) + math.sin(a) * K + (1 - math.cos(a)) * K @ K
+
+
+def _vhits(T, x, y):
+    """z of the crossings of the vertical line through (x, y) with a triangle soup T (n, 3, 3)."""
+    A, B, C = T[:, 0], T[:, 1], T[:, 2]
+    v0, v1, v2 = B[:, :2] - A[:, :2], C[:, :2] - A[:, :2], np.array([x, y]) - A[:, :2]
+    den = v0[:, 0] * v1[:, 1] - v1[:, 0] * v0[:, 1]
+    ok = np.abs(den) > 1e-14
+    den = np.where(ok, den, 1)
+    b = (v2[:, 0] * v1[:, 1] - v1[:, 0] * v2[:, 1]) / den
+    c = (v0[:, 0] * v2[:, 1] - v2[:, 0] * v0[:, 1]) / den
+    m_ = ok & (b >= -1e-9) & (c >= -1e-9) & (1 - b - c >= -1e-9)
+    return (A[m_, 2] + b[m_] * (B[m_, 2] - A[m_, 2]) + c[m_] * (C[m_, 2] - A[m_, 2]))
+
+
+def scallop_rear_lips(parts, h_loc, h_n, ring_in, h_ax=None):
+    """Real hinge on the rear wing's lower skin, duct folding 180 degrees: anything that folds with the duct
+    and sits below the hinge line inside the folded panel's footprint would swing up through the panel.
+    The canted ring's forward-inboard arc (and the fillet under it) dips below the hinge there, so the
+    ring's lower lip is trimmed flat just above the hinge plane over that arc (a scallop), blended out at the ends."""
+    h_n = np.asarray(h_n, float)
+    panel = [q for q in parts if q.name == "Rear_Wing_L"][0]
+    W = posed(panel)
+    y0, y1 = W[:, 1].min() - 0.03, W[:, 1].max() + 0.03
+    xr = ring_in + (ring_in - W[:, 0].min()) + 0.03          # mirror image of the panel root about the hinge
+    for q in parts:
+        if not (q.parent and q.parent.startswith("Hinge_RearDuct_")) or q.name.startswith("Rotor_"):
+            continue
+        R = euler_xyz(q.rot)
+        Vw = np.array([R @ v + q.loc for v in q.V])
+        ax = np.abs(Vw[:, 0])
+        # clip level: just above the hinge plane (through the hinge axis, normal h_n) inside the folded
+        # panel's footprint, falling away outside it (no step)
+        out = np.maximum(np.maximum(y0 - Vw[:, 1], Vw[:, 1] - y1), np.maximum(ax - xr, ring_in - 0.01 - ax))
+        lim = REAR_LIP_CLEAR - 1.5 * np.clip(out, 0, None)
+        hp = h_loc * [np.sign(q.loc[0]) or 1, 1, 1]
+        w = (Vw - hp) @ h_n
+        hit = w < lim
+        if hit.any():
+            Vw[hit] += np.outer(lim[hit] - w[hit], h_n)
+        n_hit = int(hit.sum())
+        if h_ax is not None and q.coll == "main" and not q.name.endswith("R"):
+            # then against the panel itself: the rear panel's twisted root dips below the tip plane aft, so
+            # lift any point whose 180-degree image still lands inside the panel until it clears by 4 mm
+            Rf = axis_rot(h_ax, math.pi)
+            Tp = W[np.array([(f[0], f[j], f[j + 1]) for f in panel.F for j in range(1, len(f) - 1)])]
+            for i in range(len(Vw)):
+                if abs(Vw[i, 0]) > xr + 0.05 or not (y0 - 0.05 < Vw[i, 1] < y1 + 0.05):
+                    continue
+                for _ in range(40):
+                    im = Rf @ (Vw[i] - hp) + hp
+                    z = _vhits(Tp, im[0], im[1])
+                    if len(z) < 2 or not (z.min() - 0.004 < im[2] < z.max() + 0.004):
+                        break
+                    Vw[i] += 0.002 * h_n
+                    n_hit += 1
+        if n_hit:
+            q.V = [R.T @ (v - q.loc) for v in Vw]
+            q.scalloped = n_hit
+
+
 def posed(p, stowed=False):
     """World-space vertices of a part, in flight or stowed pose."""
     R = euler_xyz(p.rot)
+    if stowed and getattr(p, "park", 0.0):
+        R = R @ rot_z(p.park)                                     # rotor parked at its stow index angle
     V = np.array([R @ v + p.loc for v in p.V])
     if stowed and p.parent:
         for h in hinge_chain(p.parent):                           # rotate about each hinge (rest frame)
             c, a = HINGES[h]["loc"], HINGES[h]["angle"]
-            V = (rot_y(a) @ (V - c).T).T + c
+            Rh = axis_rot(HINGES[h]["axis"], a) if "axis" in HINGES[h] else rot_y(a)
+            V = (Rh @ (V - c).T).T + c
     return V
 
 
@@ -838,7 +1268,100 @@ def rule_check(parts):
         if h.endswith("_R"):
             continue
         print(f"  {h:22s} fold {math.degrees(d['angle']):+6.1f} deg")
+    ergo_check(parts)
     return rows
+
+
+def _soup(p):
+    V = posed(p)
+    return V[np.array([(f[0], f[k], f[k + 1]) for f in p.F for k in range(1, len(f) - 1)])]
+
+
+def _vhits(T, x, y):
+    """Heights where the vertical line through (x, y) crosses a triangle soup."""
+    A, B, C = T[:, 0], T[:, 1], T[:, 2]
+    v0, v1, v2 = B[:, :2] - A[:, :2], C[:, :2] - A[:, :2], np.array([x, y]) - A[:, :2]
+    den = v0[:, 0] * v1[:, 1] - v1[:, 0] * v0[:, 1]
+    ok = np.abs(den) > 1e-14
+    den = np.where(ok, den, 1.0)
+    b = (v2[:, 0] * v1[:, 1] - v1[:, 0] * v2[:, 1]) / den
+    c = (v0[:, 0] * v2[:, 1] - v2[:, 0] * v0[:, 1]) / den
+    m = ok & (b >= -1e-9) & (c >= -1e-9) & (1 - b - c >= -1e-9)
+    return np.sort(((1 - b - c) * A[:, 2] + b * B[:, 2] + c * C[:, 2])[m])
+
+
+def ergo_check(parts, verbose=True):
+    """Seat a 95th-percentile man and a 5th-percentile woman (bare-headed) and measure clearance
+    to the canopy (8 mm glass), the floor skin (25 mm floor) and the firewall. Negative = interference."""
+    d = {p.name: p for p in parts}
+    TB, TC = _soup(d["Body"]), _soup(d["Canopy"])
+
+    def margin(x, y, z):
+        zb, zc = _vhits(TB, x, y), _vhits(TC, x, y)
+        if len(zb) == 0:
+            return -1.0, "outside"
+        roof = (zc.max() - 0.008) if len(zc) else zb.max() - 0.025
+        lo = zb.min() + 0.025
+        return min(roof - z, z - lo), ("canopy" if roof - z < z - lo else "floor")
+
+    dirs = [np.array(v, float) / np.linalg.norm(v) for v in
+            [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)] +
+            [(sx, sy, sz) for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)] +
+            [(0, sy, 1) for sy in (-1, 1)] + [(sx, 0, 1) for sx in (-1, 1)]]
+    report = {}
+    if verbose:
+        print("Cockpit fit (bare-headed, left seat; right seat is the mirror image)")
+    for name, mk in MANIKINS.items():
+        P = posture(mk)
+        X = SEAT_X
+        regions = {
+            "head": [((X, *P["head"]), mk["head_r"])],
+            "shoulders": [((X + s * (mk["shoulder_w"] / 2 - 0.06), *P["shoulder"]), 0.06) for s in (-1, 1)],
+            "torso": [((X, *(np.array([H_Y, H_Z]) + P["up"] * t)), 0.12) for t in (0.15, 0.30, 0.45)],
+            "knees": [((X + s * 0.10, *P["knee"]), 0.065) for s in (-1, 1)],
+            "shins": [((X + s * 0.09, *((P["knee"] + P["ankle"]) / 2)), 0.055) for s in (-1, 1)],
+            "feet": [((X + s * 0.08, *q), 0.045) for s in (-1, 1) for q in (P["toe"], P["heel"] + [0, 0.05])],
+        }
+        res = {}
+        for rg, spheres in regions.items():
+            best = (9.0, "")
+            for c, r in spheres:
+                for u in dirs:
+                    q = np.array(c) + r * u
+                    mg = margin(*q)
+                    best = min(best, mg)
+            res[rg] = best
+        T, L = mk["thigh"], mk["leg"]
+        kv1, kv2 = P["knee"] - P["H"], P["ankle"] - P["knee"]
+        knee = 180 - math.degrees(math.acos(np.dot(kv1, kv2) / (T * L)))
+        # headrest (built for the man) and head against the firewall: anything aft of the firewall face
+        # must be above its top edge (the space over the transverse tank is open up to the canopy)
+        fwp = d["Firewall"]
+        Vf = posed(fwp)
+        fy, ftop = Vf[:, 1].min(), Vf[:, 2].max()
+        Vs = posed(d["Seat_L"])
+        low = Vs[Vs[:, 2] < ftop + 0.01]
+        fw = fy - low[:, 1].max()
+        under = min(Vs[:, 2][i] - _vhits(TB, *Vs[i, :2]).min() for i in range(len(Vs))
+                    if Vs[i, 1] > -1.20 and len(_vhits(TB, *Vs[i, :2])))
+        report[name] = dict(res=res, knee=knee, heel_y=P["heel"][0], firewall=fw, P=P)
+        if verbose:
+            h = res["head"][0]
+            print(f"  {name}: head to canopy {h / IN:+5.1f} in "
+                  f"({'OK' if h >= HEAD_CLEAR_MIN else 'TIGHT' if h >= 0 else 'HITS'}, want >= {HEAD_CLEAR_MIN / IN:.1f} in)")
+            for rg in ("shoulders", "torso", "knees", "shins", "feet"):
+                mg, w = res[rg]
+                print(f"      {rg:9s} {mg / IN:+5.1f} in to {w:6s} {'OK' if mg >= 0 else 'HITS'}")
+            print(f"      knee angle {knee:4.0f} deg, heel at y {P['heel'][0]:+.2f} m")
+    m_, w_ = report["95th-percentile man"], report["5th-percentile woman"]
+    if verbose:
+        print(f"  Seat frame to firewall face (below its top edge): {fw / IN:+.1f} in  {'OK' if fw >= 0 else 'HITS'}")
+        print(f"  Seat frame to belly skin (floor depth under the seat): {under / IN:+.1f} in  "
+              f"{'OK' if under >= 0.025 else 'TIGHT' if under >= 0 else 'HITS'}")
+        print(f"  Foot-rest rail travel (man -> woman): {(w_['heel_y'] - m_['heel_y']) / IN:.1f} in")
+        print(f"  Seat: back {SEAT_BACK_DEG} deg from vertical, pan {SEAT_PAN_DEG} deg, H-point "
+              f"({H_Y:+.2f}, {H_Z:.2f}) m = {(H_Z - FLOOR_Z) / IN:.1f} in above the heel line")
+    return report
 
 
 # ------------------------------------------------------------------ Blender side
@@ -921,7 +1444,7 @@ def build_blender(parts, empties, livery):
     colls["main"].objects.link(root)
 
     export_objs = [root]
-    # fold hinges: empties parented in a chain, rotating about their local Y axis
+    # fold hinges: empties parented in a chain, rotating about their local Y axis (rear ducts: canted axis)
     hobj = {}
     for name in sorted(HINGES, key=lambda n: len(hinge_chain(n))):
         h = HINGES[name]
@@ -1024,6 +1547,14 @@ def build_blender(parts, empties, livery):
     # "Fold" animation: frame 1 flight -> frame 60 stowed
     scene.frame_start, scene.frame_end = 1, 60
     for name, e in hobj.items():
+        if "axis" in HINGES[name]:                                # canted hinge (rear duct): axis-angle
+            ax_ = HINGES[name]["axis"]
+            e.rotation_mode = "AXIS_ANGLE"
+            e.rotation_axis_angle = (0.0, ax_[0], ax_[1], ax_[2])
+            e.keyframe_insert(data_path="rotation_axis_angle", frame=1)
+            e.rotation_axis_angle = (HINGES[name]["angle"], ax_[0], ax_[1], ax_[2])
+            e.keyframe_insert(data_path="rotation_axis_angle", frame=60)
+            continue
         e.rotation_euler = (0, 0, 0)
         e.keyframe_insert(data_path="rotation_euler", index=1, frame=1)
         e.rotation_euler = (0, HINGES[name]["angle"], 0)

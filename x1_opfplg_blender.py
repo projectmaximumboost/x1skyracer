@@ -25,8 +25,9 @@ What it builds (collection "X1_OPFPLG"):
 
 Coordinates match the published X1 SkyRacer script (x1_skyracer_blender.py):
 metres, nose toward -Y, Z up, origin on the ground.  Engine-bay envelope
-derived from that script: x +/-0.50, y 0.14..1.50, z 0.55..1.01 m
-(about 39 x 53 x 18 in).  Pushers at x +/-0.45, y 2.271, z 0.90, 26 in bore.
+derived from that script: x +/-0.50, y 0.14..1.50, z 0.42..0.88 m
+(about 39 x 53 x 18 in; lowered 0.13 m in Oct 2026 by ENGINE_DZ to clear the
+lowered rear wing, with the belly bubbled down under the bay to suit).  Pushers at x +/-0.45, y 2.271, z 0.90, 26 in bore.
 
 Run it inside your X1_SkyRacer.blend and it drops straight into place (it hides
 Engine_Placeholder).  In either case it also builds
@@ -65,8 +66,10 @@ TURBO_SPIN_RAD_PER_FRAME = 2 * math.pi * 2 / 24   # 2 turns per 24-frame loop (s
 BUILD_REFERENCE = True     # bay box, pusher-duct wireframes and anchor empties (no X1 body)
 
 # ------------------------------------------------- X1 SkyRacer reference data ---
-ENV = dict(x=(-0.50, 0.50), y=(0.14, 1.50), z=(0.55, 1.01))   # engine bay envelope
-Z_C = 0.78                                                     # engine centre height
+ENGINE_DZ = -0.13         # whole engine + accumulator lowered 5.1 in (Oct 2026) to clear the lowered rear wing
+ENV = dict(x=(-0.50, 0.50), y=(0.14, 1.50), z=(0.55 + ENGINE_DZ, 1.01 + ENGINE_DZ))   # engine bay envelope
+Z_C = 0.78                # engine centre height as drawn; everything in the bay is then moved by ENGINE_DZ
+ZC_BAY = Z_C + ENGINE_DZ  # engine centre height in the craft
 PUSHER_X, PUSHER_Y, PUSHER_Z = 0.45, 2.271, 0.90               # FWD_C (mirrored in x)
 PUSHER_R0, PUSHER_R1, PUSHER_HL = 0.33, 0.40, 0.25             # bore r, outer r, half length
 PUSHER_HUB_R, PUSHER_HUB_L, PUSHER_ROTOR_Z = 0.11, 0.22, -0.10
@@ -82,12 +85,26 @@ ACC_W = LTO_NX * LTO_CELL[0] + (LTO_NX - 1) * LTO_GAP_X + 2 * (LTO_WALL + LTO_CL
 ACC_L = LTO_NY * LTO_PITCH_Y + 2 * (LTO_WALL + LTO_CLR + LTO_END)
 ACC_H = 2 * (LTO_WALL + LTO_CLR) + LTO_CELL[2] + LTO_BUS
 ACC_C = (0.0, ACC_Y0 + ACC_L / 2, ACC_TOP - ACC_H / 2)
+ACC_TOP_BAY = ACC_TOP + ENGINE_DZ
 HULL = [  # y, half-width, top z, bottom z, crown exponent, belly exponent (X1 SkyRacer station table)
     [-2.741, 0.05, 0.64, 0.56, 2.2, 2.2], [-2.50, 0.34, 0.74, 0.40, 2.2, 2.2],
     [-2.00, 0.56, 0.82, 0.32, 2.3, 2.4], [-1.30, 0.68, 0.88, 0.30, 2.4, 2.6],
     [-0.50, 0.72, 0.90, 0.32, 2.4, 2.6], [0.40, 0.68, 1.06, 0.38, 2.4, 2.6],
-    [1.20, 0.56, 1.12, 0.50, 2.3, 2.4], [1.90, 0.38, 1.10, 0.66, 2.2, 2.2],
-    [2.741, 0.18, 1.04, 0.82, 2.2, 2.2]]
+    [1.20, 0.56, 1.12, 0.50, 2.3, 2.4], [1.50, 0.53, 1.12, 0.54, 2.3, 2.4],
+    [1.78, 0.30, 1.11, 0.60, 2.2, 2.3], [2.00, 0.085, 1.10, 0.64, 2.2, 2.2],
+    [2.741, 0.04, 1.04, 0.82, 2.2, 2.2]]
+# X1 SkyRacer engine-bay tub: below z_cut the belly is bubbled down and out to a boxy keel at z_bot
+# (same rule as the X1 script's BAY_TUB; faded in / out over the ramps along Y)
+BAY_TUB = dict(y0=-0.60, y1=2.05, ramp_f=0.40, ramp_r=0.60, z_cut=0.70, hw=0.53, n=3.5,
+               z_bot=((-0.60, 0.25), (0.80, 0.25), (1.45, 0.39), (2.05, 0.64)))   # keel line (y, z)
+
+
+def _tub_zbot(y):
+    pts = BAY_TUB["z_bot"]
+    for (y0, z0), (y1, z1) in zip(pts[:-1], pts[1:]):
+        if y0 <= y <= y1:
+            return z0 + (z1 - z0) * (y - y0) / (y1 - y0)
+    return pts[0][1] if y < pts[0][0] else pts[-1][1]
 
 
 def hull_row(y):
@@ -98,12 +115,39 @@ def hull_row(y):
     return HULL[0] if y < HULL[0][0] else HULL[-1]
 
 
-def body_x(y, z):
+def _body_x0(y, z):
     _, hw, top, bot, nu, nl = hull_row(y)
     zc, hh = 0.5 * (top + bot), 0.5 * (top - bot)
     q = max(-1.0, min(1.0, (z - zc) / hh))
     n = nu if q >= 0 else nl
     return hw * (1 - abs(q) ** n) ** (1 / n)
+
+
+def _tub_k(y):
+    t = BAY_TUB
+    if not (t["y0"] < y < t["y1"]):
+        return 0.0
+    u = min((y - t["y0"]) / t["ramp_f"], (t["y1"] - y) / t["ramp_r"], 1.0)
+    return u * u * (3 - 2 * u)
+
+
+def belly_z(y):
+    """Lowest point of the X1 belly at station y, with the engine-bay tub."""
+    bot = hull_row(y)[3]
+    return bot + _tub_k(y) * (min(bot, _tub_zbot(y)) - bot)
+
+
+def body_x(y, z):
+    """Skin half-width at height z, with the engine-bay tub (fully faded in; the ramps are outside the bay)."""
+    x0 = _body_x0(y, z)
+    t = BAY_TUB
+    k = _tub_k(y)
+    if k <= 0 or z >= t["z_cut"]:
+        return x0
+    a, b = min(_body_x0(y, t["z_cut"]), t["hw"]), t["z_cut"] - min(_tub_zbot(y), hull_row(y)[3])
+    s_ = min(1.0, (t["z_cut"] - z) / b)
+    xt = a * max(0.0, 1 - s_ ** t["n"]) ** (1 / t["n"])
+    return max(x0, x0 + k * (xt - x0))
 
 
 # --------------------------------------------------------------- materials ---
@@ -816,7 +860,24 @@ def build(preset=PRESET):
             c = add(df.P(0, 0, z_le + chord / 2), mul(er, PUSHER_R0 - 0.007))
             obox(o.mesh, c, (er, et, df.d), (0.007, 0.0008, chord / 2 + 0.01), "Printed_HX")
 
+    # ---- lower the engine and accumulator by ENGINE_DZ. The exhaust downpipe moves with them; the
+    #      external propane lines move fully in the bay and blend back to the fixed pusher heat exchangers
+    if ENGINE_DZ:
+        for o in objs:
+            if o.coll == "OPFPLG_Radiators":
+                continue
+            if o.coll == "OPFPLG_External" and "Downpipe" not in o.name:
+                o.mesh.v = [(v[0], v[1], v[2] + ENGINE_DZ * _line_w(v[1])) for v in o.mesh.v]
+                continue
+            o.mesh.v = [(v[0], v[1], v[2] + ENGINE_DZ) for v in o.mesh.v]
+            o.origin = (o.origin[0], o.origin[1], o.origin[2] + ENGINE_DZ)
     return d, objs
+
+
+def _line_w(y, y0=1.50, y1=2.10):
+    """1 in the engine bay, easing to 0 at the pusher heat exchangers."""
+    u = min(1.0, max(0.0, (y - y0) / (y1 - y0)))
+    return 1 - u * u * (3 - 2 * u)
 
 
 def reference_objects():
@@ -836,7 +897,7 @@ def reference_objects():
         objs.append(o)
     # anchors matching the X1 SkyRacer script's empties / part origins (metres, nose -Y, Z up)
     for name, loc, size in (("OPF_X1_Craft_Origin", (0.0, 0.0, 0.0), 0.6),
-                            ("OPF_REF_Engine_Bay", (0.0, 0.5 * (ENV["y"][0] + ENV["y"][1]), Z_C), 0.25),
+                            ("OPF_REF_Engine_Bay", (0.0, 0.5 * (ENV["y"][0] + ENV["y"][1]), ZC_BAY), 0.25),
                             ("OPF_REF_Thruster_L", (PUSHER_X, PUSHER_Y, PUSHER_Z), 0.2),
                             ("OPF_REF_Thruster_R", (-PUSHER_X, PUSHER_Y, PUSHER_Z), 0.2)):
         e = Obj(name, "OPFPLG_Reference", origin=loc, display="EMPTY")
@@ -888,20 +949,21 @@ def fit_report(d, objs):
     ok_all &= gap >= 0
     lines.append(f"    turbo volutes clear the cross-over pipes by {gap * 1000:.0f} mm   {'OK' if gap >= 0 else 'CLASH'}")
     lines.append(f"  6 inverters (one per stator) on a common DC bus; single HV feed drops between cylinders 1-2 "
-                 f"at x {d['x_feed']:+.2f}, y {d['y_feed']:.3f} into the accumulator top (z {ACC_TOP:.2f})")
+                 f"at x {d['x_feed']:+.2f}, y {d['y_feed']:.3f} into the accumulator top (z {ACC_TOP_BAY:.2f})")
     a = d["acc"]
-    hb = Z_C - d["flange_r"]
+    hb = ZC_BAY - d["flange_r"]
     ys = [ACC_Y0 + ACC_L * k / 40 for k in range(41)]
-    zb = ACC_TOP - ACC_H
-    belly = min(zb - hull_row(y)[3] for y in ys)
-    side = min(body_x(y, z) - ACC_W / 2 for y in ys for z in (zb, ACC_TOP))
-    acc_ok = (hb - ACC_TOP) >= 0.010 and belly >= 0.05 - 1e-6 and side >= 0.035 - 1e-6
+    at = ACC_TOP_BAY
+    zb = at - ACC_H
+    belly = min(zb - belly_z(y) for y in ys)
+    side = min(body_x(y, z) - ACC_W / 2 for y in ys for z in (zb, at))
+    acc_ok = (hb - at) >= 0.010 and belly >= 0.05 - 1e-6 and side >= 0.035 - 1e-6
     ok_all &= acc_ok
     lines.append(f"  accumulator: {a['n']} x Toshiba SCiB 20Ah-HP LTO, {a['n']}S, {a['v_nom']:.0f} V nominal, "
                  f"{a['kwh']:.1f} kWh, ~{a['kw10']:.0f} kW for 10 s, cells {a['kg']:.0f} kg")
     lines.append(f"    case {ACC_W * 1000:.0f} W x {ACC_L * 1000:.0f} L x {ACC_H * 1000:.0f} H mm "
-                 f"({ACC_W * ACC_L * ACC_H * 1000:.1f} L), y {ACC_Y0:.3f}..{ACC_Y0 + ACC_L:.3f}, z {zb:.3f}..{ACC_TOP:.3f}")
-    lines.append(f"    clearances: housings above {(hb - ACC_TOP) * 1000:.0f} mm, belly below >= {belly * 1000:.0f} mm, "
+                 f"({ACC_W * ACC_L * ACC_H * 1000:.1f} L), y {ACC_Y0:.3f}..{ACC_Y0 + ACC_L:.3f}, z {zb:.3f}..{at:.3f}")
+    lines.append(f"    clearances: housings above {(hb - at) * 1000:.0f} mm, belly below >= {belly * 1000:.0f} mm, "
                  f"skin at sides >= {side * 1000:.0f} mm   {'OK' if acc_ok else 'CLASH'}")
     lines.append(f"  RESULT: {'fits inside the engine bay' if ok_all else 'DOES NOT FIT'}"
                  " (exhaust downpipe, external coolant lines, fan heat exchangers, and the HV feed + accumulator below the bay floor are outside by design)")

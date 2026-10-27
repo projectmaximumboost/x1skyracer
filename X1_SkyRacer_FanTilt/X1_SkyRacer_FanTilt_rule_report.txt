@@ -1,0 +1,41 @@
+X1 Racing rule check
+  Span tip-to-tip                       4.720 m ( 185.8 in)  limit  4.724 m ( 186.0 in)  OK
+  Length                                5.482 m ( 215.8 in)  limit  5.486 m ( 216.0 in)  OK
+  Height (flight)                       1.339 m (  52.7 in)  limit  2.804 m ( 110.4 in)  OK
+  Stowed width                          2.270 m (  89.4 in)  limit  2.286 m (  90.0 in)  OK
+  Stowed height                         1.343 m (  52.9 in)  limit  1.346 m (  53.0 in)  OK
+  Stowed length                         5.482 m ( 215.8 in)  limit  5.486 m ( 216.0 in)  OK
+  Lift duct inner diameter              1.117 m (  44.0 in)  limit  1.118 m (  44.0 in)  OK
+  Forward duct inner diameter           0.660 m (  26.0 in)  limit  0.914 m (  36.0 in)  OK
+  Lift duct height (target 5 in)        0.127 m (   5.0 in)  limit  0.127 m (   5.0 in)  OK
+  Lift fans: 8 (4 locations x coaxial pair)  OK
+  Forward-flight fans: 2  OK
+  Stowed ground clearance (lowest point): 0.0 in
+  Fuel: 200 lb propane needs 223 L water capacity at 80% fill; tanks 238 L  OK
+    Tank_Transverse     92.9 L
+    Tank_Sponson_L      72.4 L
+    Tank_Sponson_R      72.4 L
+  Hinge_FrontWing_L      fold  +83.9 deg
+  Hinge_FrontDuct_L      fold -173.9 deg
+  Hinge_RearWing_L       fold  -90.0 deg
+  Hinge_RearDuct_L       fold +180.0 deg
+Cockpit fit (bare-headed, left seat; right seat is the mirror image)
+  95th-percentile man: head to canopy  +1.2 in (OK, want >= 1.0 in)
+      shoulders  +5.0 in to canopy OK
+      torso      +8.4 in to floor  OK
+      knees     +11.4 in to floor  OK
+      shins      +6.8 in to floor  OK
+      feet       +0.6 in to floor  OK
+      knee angle  125 deg, heel at y -1.73 m
+  5th-percentile woman: head to canopy  +7.6 in (OK, want >= 1.0 in)
+      shoulders +12.0 in to canopy OK
+      torso      +8.4 in to floor  OK
+      knees      +9.4 in to floor  OK
+      shins      +5.5 in to floor  OK
+      feet       +0.6 in to floor  OK
+      knee angle  125 deg, heel at y -1.57 m
+  Seat frame to firewall face (below its top edge): +8.5 in  OK
+  Seat frame to belly skin (floor depth under the seat): +2.0 in  OK
+  Foot-rest rail travel (man -> woman): 6.2 in
+  Seat: back 25 deg from vertical, pan 12 deg, H-point (-0.95, 0.43) m = 7.1 in above the heel line
+preview -> x1hs_preview.png faces: 79608
