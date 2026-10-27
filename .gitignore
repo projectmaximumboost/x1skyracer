@@ -1,0 +1,7 @@
+# Blender working files: large binaries, rebuilt from the procedural scripts
+*.blend
+*.blend1
+# OS / Python clutter
+.DS_Store
+__pycache__/
+*.pyc

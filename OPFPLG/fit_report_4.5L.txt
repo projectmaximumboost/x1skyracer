@@ -1,0 +1,20 @@
+X1 OPFPLG concept - preset 4.5L: 100 bore x 96 stroke per piston
+  bore 100 mm, stroke 96 mm per piston, 3 cylinders x 2 pistons
+  displacement 1.51 L per cylinder, 4.52 L total
+  pistons move side to side; cylinder length 980 mm across a 1000 mm bay, housing OD 262 mm, fore-aft pitch 300 mm
+  magnets start 126 mm behind the piston skirt (never enter the liner)
+  linear-generator housing gas volume per side 8895 -> 8141 cm3, volume ratio 1.09
+  engine-bay fit (core incl. pistons at both dead centres):
+    x: -0.491 .. +0.490 m   bay -0.500 .. +0.500   margin +9 mm   OK
+    y: +0.145 .. +1.455 m   bay +0.140 .. +1.500   margin +5 mm   OK
+    z: +0.560 .. +0.998 m   bay +0.550 .. +1.010   margin +10 mm   OK
+  gas path sized for 2,000 hp peak: air 1.49 kg/s, exhaust 1.54 kg/s (propane 59 g/s at 55 % BTE)
+    compressor inlet 150 mm: 72 m/s | charge air 110 mm at PR 3.2: 60 m/s | plenums 98 x 110 mm
+    pre-turbine 110 mm at 2.8 bar / 850 K: 142 m/s | downpipe 180 mm at 1.1 bar / 650 K: 103 m/s
+    turbo: compressor 84 mm inducer / 116 mm exducer, turbine 112 mm / 96 mm, volutes 340 mm across
+    turbo volutes clear the cross-over pipes by 8 mm   OK
+  6 inverters (one per stator) on a common DC bus; single HV feed drops between cylinders 1-2 at x +0.16, y 0.430 into the accumulator top (z 0.63)
+  accumulator: 162 x Toshiba SCiB 20Ah-HP LTO, 162S, 373 V nominal, 7.5 kWh, ~308 kW for 10 s, cells 88 kg
+    case 770 W x 668 L x 134 H mm (69.0 L), y 0.120..0.788, z 0.496..0.630
+    clearances: housings above 15 mm, belly below >= 58 mm, skin at sides >= 40 mm   OK
+  RESULT: fits inside the engine bay (exhaust downpipe, external coolant lines, fan heat exchangers, and the HV feed + accumulator below the bay floor are outside by design)
