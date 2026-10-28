@@ -2,7 +2,7 @@
 
 The single source of truth for the X1 SkyRacer design is this GitHub repository:
 
-- Repo: https://github.com/projectmaximumboost/x1skyracer (private for now; access by invitation)
+- Repo: https://github.com/projectmaximumboost/x1skyracer (public, read-only for everyone except invited collaborators)
 - Working branch: `alpha`
 - Owner account: `x1racing` (org `projectmaximumboost`)
 

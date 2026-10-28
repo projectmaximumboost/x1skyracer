@@ -144,7 +144,7 @@ We want to hear from:
 
 Start at **[buildflyingcars.com](https://buildflyingcars.com)**, then reach out through [x1racing.com](https://x1racing.com) or [@realx1racing on X](https://x.com/realx1racing).
 
-This repository is private for now. Access is by invitation, and it will be opened up read-only to the public later.
+This repository is public and read-only. Anyone can view and clone it. Only invited collaborators can change it.
 
 ## What's in this repository
 
