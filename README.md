@@ -21,6 +21,10 @@
   <a href="https://buildflyingcars.com/x1-skyracer/viewer/"><strong>3D viewer</strong></a> &nbsp;|&nbsp; <a href="https://buildflyingcars.com/x1-skyracer/hauler/"><strong>Transport study</strong></a> &nbsp;|&nbsp; <a href="https://buildflyingcars.com/x1-racer"><strong>Design your own</strong></a>
 </p>
 
+<p align="center">
+  <img src="assets/x1-skyracer.png" alt="The X1 SkyRacer: a white two-seat flying car with four lift fans, a clear canopy and an engine bay cutaway" width="900">
+</p>
+
 ---
 
 ## Maximum Boost
@@ -154,7 +158,7 @@ This repository is public and read-only. Anyone can view and clone it. Only invi
 | `X1_SkyRacer_FanTilt/` | The latest design study: results, rule report, analysis scripts, images and the web viewer |
 | `x1_opfplg_blender.py`, `OPFPLG/`, `X1_OPFPLG.glb` | The opposed twin free-piston linear generator (OPFPLG) power plant models |
 | `rule-book/` | A copy of the X1 Racing Rule Book |
-| `assets/` | The logo |
+| `assets/` | The logo and the SkyRacer picture |
 
 Large `.blend` working files are not stored here. They are rebuilt from the scripts. The `alpha` branch is the latest design.
 
