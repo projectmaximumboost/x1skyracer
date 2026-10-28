@@ -27,7 +27,7 @@
 
 Flying cars aren't held back by physics, engineering or software. They're held back by certification. **Project MAXIMUM BOOST** breaks that barrier by racing.
 
-The **X1 SkyRacer** is the car. It is a two-seat, side-by-side flying car, built to race and designed to carry 2 people (a 500 lb passenger payload). Racing is the mechanism. Maximum Freedom is the prize: a flying car in every driveway.
+The **X1 SkyRacer** is the car. It is a two-seat, side-by-side flying car, built to race and designed to carry 2 people. The 500 lb passenger payload is a design requirement: when raced, the car is remote-piloted and unmanned, and the seats carry 500 lb of ballast. Racing is the mechanism. Maximum Freedom is the prize: a flying car in every driveway.
 
 Racing is the fastest, lowest-cost way to get flying cars flying a lot. Every race produces real flight data, and every season the cars get faster, safer and smarter. What we learn flows to the car makers, the freight industry, the power grid, and ultimately your garage.
 
@@ -90,7 +90,7 @@ Current design, from the fan-tilt study on the `alpha` branch. See [`FAN_TILT_RE
 
 | | |
 | --- | --- |
-| Seats | 2, side by side, with a 500 lb passenger payload |
+| Seats | 2, side by side. 500 lb passenger design requirement; raced remote and unmanned with 500 lb of ballast |
 | Wingspan | About 15.5 ft |
 | Fans | 8 lift fans in 4 ducts, plus 2 forward-flight pushers |
 | Power | Series hybrid on propane, with an opposed twin free-piston linear generator design ([`OPFPLG/`](OPFPLG/)) |
@@ -144,7 +144,7 @@ We want to hear from:
 
 Start at **[buildflyingcars.com](https://buildflyingcars.com)**, then reach out through [x1racing.com](https://x1racing.com) or [@realx1racing on X](https://x.com/realx1racing).
 
-This repository is public and read-only. Anyone can view and clone it. Only invited collaborators can change it.
+This repository is public and read-only. Anyone can view and clone it. Only invited collaborators can change it. To share an idea or a design, [open an issue](https://github.com/projectmaximumboost/x1skyracer/issues).
 
 ## What's in this repository
 
