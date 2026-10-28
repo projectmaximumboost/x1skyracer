@@ -57,6 +57,37 @@ That is $11 billion of federal commitment and a $19.8 billion program in total.
 
 Read the details: the [executive summary](https://x1racing.com/files/X1_Racing_Project_MAXIMUM_BOOST_Executive_Summary_v7.pdf), the [white paper](https://x1racing.com/files/Racing_to_Advanced_Air_Mobility_Project_MAXIMUM_BOOST.pdf), the [program financial framework](https://x1racing.com/files/X1_Racing_Project_MAXIMUM_BOOST_Program_Financial_Framework.pdf), and the [teams page](https://x1racing.com/teams).
 
+## Maximum Proof: why racing gets flying cars certified
+
+From the [white paper](https://x1racing.com/files/Racing_to_Advanced_Air_Mobility_Project_MAXIMUM_BOOST.pdf), *Racing to Advanced Air Mobility*. The short version:
+
+- **There is no aircraft category for this yet.** A two-seat, SI-augmented, hybrid-electric flying car doesn't fit today's rules. The FAA has made new categories before, with Sport Pilot in 2004, Remote Pilot in 2016 and Powered-Lift in 2024. The program asks for one more.
+- **Racing makes the evidence fast.** A full field of instrumented, unmanned airframes flies in parallel, not a handful of test articles one after another. No human is ever aboard a racing car.
+- **Danger Zones make the failure data.** Each course has Safe Zones, where the SI Boost layer prevents collisions, and designated Danger Zones, where contact is allowed and the SI dials its help down on a published, logged schedule. The SI still keeps cars and debris away from spectators and property. Every crash is recorded with the pilot's inputs and the SI's decisions side by side. The white paper estimates a single aggressive season could capture hundreds to thousands of complete failure-mode records, where a conventional certification program sees a handful.
+- **The game is the control console.** The X1 Racing Game is meant to use the same interface that pilots the live cars. Top players qualify for real races, and live telemetry keeps the game's digital twin honest. Simulation adds to flight evidence and never replaces it.
+- **The on-ramp already exists.** The paper points to the FAA's MOSAIC rule, the Department of War acquisition strategy and Executive Order 14255, which together need no new law.
+
+## Maximum Roadmap
+
+Two phases, split by type certification of the whole package: airframe, SI co-pilot and free-piston linear generator powertrain.
+
+| Phase | What happens |
+|---|---|
+| **Phase 1: before certification** | The $2.2B upfront tranche goes to work. The X1 Racing Game launches at scale. The first teams join (up to 50 cars across up to 17 teams, with up to 4 cars each). Unmanned racing starts with Danger Zones from the opening event. The first **X1 Cup** runs in Year 2 as the first public airworthiness milestone. The FAA category is written in parallel from the race evidence. **Target: January 20, 2029.** |
+| **Phase 2: after certification** | Teams commercialize what they built. American car makers carry personal flying cars to consumer scale. The certified powertrain goes into freight, grid power and defense. The racing series carries on as an entertainment property. |
+
+Phase 2 starts when certification arrives, not on a calendar date. The long-term destination is **Maximum Freedom**: operator certification that gets as simple as a driver's license, one step at a time, backed by the safety record the program builds.
+
+All of this is a plan and a proposal. Nothing is funded and nothing is certified.
+
+## Maximum Safety
+
+The white paper's goal is a personal flying car safer than walking, driving and unaided general aviation. Its method is to take the three causes of most general aviation deaths (loss of control, flying into terrain, and bad-weather flight) and have an SI co-pilot with authority over the airframe's limits watch for each one. It projects 30 to 70 fatalities per billion vehicle-miles, against about 180 for walking and 150 for driving. That figure is a projection from the paper's own analysis, not a measured record. Racing is how we earn the real numbers.
+
+## Maximum Power
+
+The powertrain is a series hybrid: a free-piston linear generator charges a small accumulator (10 kWh at most under the rule book), and electric fans do the flying. A racing-grade engine can run at richer, hotter settings than a road car's emissions rules allow. The program targets **60% brake thermal efficiency** to start, and its opposed free-piston design aims for the high 60s. For scale, a linear generator the U.S. Air Force has deployed at Travis Air Force Base reaches about 46%. The paper argues this beats a grid-charged battery car, which comes out around 25 to 32% from fuel to wheel. It also scales without waiting on the grid. Details are in the [OPFPLG working paper](https://x1racing.com/files/OPFPLG_First_Principles_SSRN_Working_Paper_MAXIMUM_BOOST.pdf) and the [folder in this repo](OPFPLG/).
+
 ## See it and build your own
 
 - **[3D viewer](https://buildflyingcars.com/x1-skyracer/viewer/)** on buildflyingcars.com: spin the SkyRacer around, cut it away and look inside.
