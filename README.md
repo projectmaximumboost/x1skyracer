@@ -29,6 +29,8 @@
 
 ## Maximum Boost
 
+<h3 align="center">Open source + public funds + racing = break the certification barrier.</h3>
+
 Flying cars aren't held back by physics, engineering or software. They're held back by certification. **Project MAXIMUM BOOST** breaks that barrier by racing.
 
 The **X1 SkyRacer** is the car. It is a two-seat, side-by-side flying car, built to race and designed to carry 2 people. The 500 lb passenger payload is a design requirement: when raced, the car is remote-piloted and unmanned, and the seats carry 500 lb of ballast. Racing is the mechanism. Maximum Freedom is the prize: a flying car in every driveway.
