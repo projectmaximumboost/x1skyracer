@@ -29,7 +29,7 @@
 
 ## Maximum Boost
 
-<h3 align="center">Open source + public funds + racing = break the certification barrier.</h3>
+<h3 align="center">(Public funds × sponsors) + (open source × SI) + racing = break the certification barrier.</h3>
 
 Flying cars aren't held back by physics, engineering or software. They're held back by certification. **Project MAXIMUM BOOST** breaks that barrier by racing.
 
