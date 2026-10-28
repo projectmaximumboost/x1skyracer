@@ -53,6 +53,8 @@ The money moves through **X1 Racing as prime contractor**. It is a proposal, not
 
 That is $11 billion of federal commitment and a $19.8 billion program in total.
 
+**Public ownership: the public gets a stake.** This is a public-private partnership. In return for the federal investment, the United States would hold **10% of X1 Racing**, non-voting, with a senior liquidation preference, so taxpayers have first claim on assets if the company is ever dissolved. The federal government shares in the upside and takes no operational control, so the series stays independent. The sponsors and teams are the private half of the partnership. The public puts in the catalyst and owns a piece of the result.
+
 **Why public funding? Because the sky is public domain.** Public funding pushes the technology and builds the overwhelming case for regulatory adoption. Every design built, simulated and raced adds to the flight data regulators need to open the skies, and that evidence belongs in the open, not locked in a corporate room.
 
 Read the details: the [executive summary](https://x1racing.com/files/X1_Racing_Project_MAXIMUM_BOOST_Executive_Summary_v7.pdf), the [white paper](https://x1racing.com/files/Racing_to_Advanced_Air_Mobility_Project_MAXIMUM_BOOST.pdf), the [program financial framework](https://x1racing.com/files/X1_Racing_Project_MAXIMUM_BOOST_Program_Financial_Framework.pdf), and the [teams page](https://x1racing.com/teams).
@@ -74,7 +76,7 @@ Two phases, split by type certification of the whole package: airframe, SI co-pi
 | Phase | What happens |
 |---|---|
 | **Phase 1: before certification** | The $2.2B upfront tranche goes to work. The X1 Racing Game launches at scale. The first teams join (up to 50 cars across up to 17 teams, with up to 4 cars each). Unmanned racing starts with Danger Zones from the opening event. The first **X1 Cup** runs in Year 2 as the first public airworthiness milestone. The FAA category is written in parallel from the race evidence. **Target: January 20, 2029.** |
-| **Phase 2: after certification** | Teams commercialize what they built. American car makers carry personal flying cars to consumer scale. The certified powertrain goes into freight, grid power and defense. The racing series carries on as an entertainment property. |
+| **Phase 2: after certification** | Teams commercialize what they built. American car makers carry personal flying cars to consumer scale. The certified powertrain goes into freight, grid power and defense. The racing series carries on as an entertainment property, and the public keeps its 10% stake. |
 
 Phase 2 starts when certification arrives, not on a calendar date. The long-term destination is **Maximum Freedom**: operator certification that gets as simple as a driver's license, one step at a time, backed by the safety record the program builds.
 
