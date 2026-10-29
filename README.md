@@ -98,6 +98,8 @@ The powertrain is a series hybrid: a free-piston linear generator charges a smal
 - **[Transport study](https://buildflyingcars.com/x1-skyracer/hauler/)** on buildflyingcars.com: watch it fold, roll off the race-car hauler, unfold and fly.
 - **[Design your own](https://buildflyingcars.com/x1-racer)** on buildflyingcars.com: build your own rules-compliant X1 racer.
 
+- **USA livery:** the SkyRacer in red, white and blue. Open the 3D viewer in [`liveries/usa/`](liveries/usa/).
+
 ## Maximum Engagement: play the game
 
 The Project MAXIMUM BOOST video game is a breakout-style brick-breaker where the wall you smash is the flying car regulation barrier. Can you break the barrier? It is the quickest way to see what we are doing.
