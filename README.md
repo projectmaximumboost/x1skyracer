@@ -100,7 +100,6 @@ The powertrain is a series hybrid: a free-piston linear generator charges a smal
 
 - **USA livery:** the SkyRacer in red, white and blue. Open the 3D viewer in [`liveries/usa/`](liveries/usa/).
 
-- **Grand Prix sim:** Claude-built browser race of the SkyRacer. Open [`sim/`](sim/).
 
 ## Maximum Engagement: play the game
 
