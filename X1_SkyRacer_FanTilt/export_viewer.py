@@ -1,4 +1,10 @@
-import sys, io, json, base64, numpy as np, math; sys.path.insert(0,"tools"); sys.path.insert(0,"."); from geo import load
+"""Viewer data for skyracer_fantilt_fold.html: python3 export_viewer.py ../x1_skyracer_blender.py out.json
+(needs numpy and Pillow; x1_opfplg_blender.py must sit next to the model script)."""
+import sys, io, os, json, base64, importlib.util, numpy as np, math
+sys.path.insert(0, os.path.dirname(os.path.abspath(sys.argv[1])))
+def load(path, name="m"):
+    spec = importlib.util.spec_from_file_location(name, path); m_ = importlib.util.module_from_spec(spec)
+    sys.modules[name] = m_; spec.loader.exec_module(m_); return m_
 m=load(sys.argv[1],"m"); P,E=m.build_parts()
 def srgb(c): return "#%02x%02x%02x"%tuple(int(round(max(0,min(1,v))*255)) for v in c)
 hinges={n:dict(loc=[round(float(v)*1000) for v in h["loc"]],axis=[round(float(v),5) for v in h["axis"]] if "axis" in h else "Y",stowed=float(h["angle"]),parent=h["parent"]) for n,h in m.HINGES.items()}
@@ -13,7 +19,8 @@ for p in P:
         if d["color"] is None:   # livery texture (body, sponsons): real UVs + the model's livery image
             key=("LIV",1.0,0.32,0.0)
         else:
-            key=(srgb(d["color"]),d.get("alpha",1.0),d.get("rough",0.5),d.get("metal",0.0))
+            cc=d["color"] if "emit" not in d else tuple(min(1.0,a_+b_) for a_,b_ in zip(d["color"],d["emit"]))   # lit screen
+            key=(srgb(cc),d.get("alpha",1.0),d.get("rough",0.5),d.get("metal",0.0))
         if mn=="Glass": key=("#20262e",0.55,0.08,0.0)
         tris=groups.setdefault(key,[])
         for k in range(1,len(f)-1): tris += [f[0],f[k],f[k+1]]
@@ -58,7 +65,7 @@ import io
 from PIL import Image
 L=m.make_livery(2048,352)[::-1,:,:3]; L=np.round(L*24)/24; buf=io.BytesIO(); Image.fromarray((np.clip(L,0,1)*255).astype(np.uint8)).quantize(16).save(buf,"PNG",optimize=True)
 liv="data:image/png;base64,"+base64.b64encode(buf.getvalue()).decode()
-meta=dict(livery=liv,rear_tilt_hover=getattr(m,"REAR_TILT_HOVER_DEG",m.LIFT_CANT_R_DEG),rear_tilt_min=getattr(m,"REAR_TILT_MIN_DEG",0),rear_tilt_max=getattr(m,"REAR_TILT_MAX_DEG",0),rear_cant=m.LIFT_CANT_R_DEG,
+meta=dict(eye=[round(float(v),3) for v in E["Eye_L"]] if "Eye_L" in E else None,livery=liv,rear_tilt_hover=getattr(m,"REAR_TILT_HOVER_DEG",m.LIFT_CANT_R_DEG),rear_tilt_min=getattr(m,"REAR_TILT_MIN_DEG",0),rear_tilt_max=getattr(m,"REAR_TILT_MAX_DEG",0),rear_cant=m.LIFT_CANT_R_DEG,
           pusher_tilt=m.PUSHER_TILT_DEG,wing_inc=m.WING_INCIDENCE_DEG,
           hauler=[m.RULES["folded_width_max"]*1000,m.RULES["folded_height_max"]*1000,m.RULES["length_max"]*1000])
 s=json.dumps(dict(meta=meta,hinges=hinges,parts=parts),separators=(",",":"))
