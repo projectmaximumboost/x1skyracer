@@ -133,7 +133,7 @@ ul.issues b { color: var(--fg); font-weight: 600; }
 <header>
   <div class="brand">
     <h1>X1 <b>OPFPLG</b> 1,500 hp</h1>
-    <span>Opposed free-piston linear generator · lightweight build · aluminium windings · one-piece printed centre block · X1 SkyRacer engine bay</span>
+    <span>Opposed free-piston linear generator · lightweight build · aluminium windings · sodium-filled printed titanium pistons · one-piece printed centre block · X1 SkyRacer engine bay</span>
   </div>
   <span class="status ok" id="fit">Loading</span>
 </header>
@@ -192,6 +192,12 @@ ul.issues b { color: var(--fg); font-weight: 600; }
     </section>
 
     <section>
+      <h2>Gas path</h2>
+      <div class="bar" id="flow"></div>
+      <p class="note">Mean velocity at the continuous point against a target for each passage. Each end of the block is one chest round all three port rings, so the ports breathe from every side. The compressor rises behind the block into a hot plenum on top of the cooler; the air passes straight down through a wide, shallow core into a cold plenum that drains through its floor into the air chest along its whole length.</p>
+    </section>
+
+    <section>
       <h2>Mass estimate</h2>
       <dl class="specs" id="mass"></dl>
       <p class="note">Built up from this geometry with ordinary material densities, about ±20 %. The first build of this engine (154 × 124 mm, copper windings, steel liners) was about 838 kg for the engine and 1,188 kg for the package.</p>
@@ -200,7 +206,7 @@ ul.issues b { color: var(--fg); font-weight: 600; }
     <section>
       <h2>Propane cooling</h2>
       <dl class="specs" id="cool"></dl>
-      <p class="note">Six piston circuits plus two auxiliary circuits. Each chamber pumps its own loop: liquid enters through a check valve at the low end of the pressure swing, runs through that piston's half of the cooling gallery in the centre block, then sprays the crown underside and the stator slots, and the vapour leaves through the bleed valve to that circuit's condenser sector. The bleed valve sets the chamber pressure, which sets the boiling temperature and the return force together.</p>
+      <p class="note">Six piston circuits, two hot-stage charge-cooler circuits (condensing at 82 °C) and two auxiliary circuits (59 °C). Each chamber pumps its own loop: liquid enters through a check valve at the low end of the pressure swing, runs through that piston's half of the cooling gallery in the centre block, then sprays the crown's finned sodium jacket and the stator slots, and the vapour leaves through the bleed valve to that circuit's condenser sector. The bleed valve sets the chamber pressure, which sets the boiling temperature and the return force together.</p>
     </section>
 
     <section>
@@ -243,17 +249,17 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const SYSTEMS = [
   ["OPFPLG_Core", "Cylinders & housings", "sleeves, port belts, propane chambers, injectors", "#9cc8e6"],
-  ["OPFPLG_Block", "Printed centre block", "one piece: three bores, bolt faces, mounts", "#8f96a0"],
+  ["OPFPLG_Block", "Printed centre block", "waist, air chest, exhaust housing, bolts, mounts", "#8f96a0"],
   ["OPFPLG_Generator", "Pistons, magnets, stators", "folded magnet sleeves, inner + outer stators", "#d9773d"],
-  ["OPFPLG_Air", "Air path, cooler & e-turbo", "charge air cooler, plenum, collector, turbo", "#4a8fe0"],
+  ["OPFPLG_Air", "Gas path & e-turbo", "chests, riser, stacked cooler, outlet, turbo", "#4a8fe0"],
   ["OPFPLG_Cooling", "Propane, in bay", "bleed + check valves, spray lances, auxiliary loops", "#f2c230"],
   ["OPFPLG_External", "Lines to the pushers", "8 vapour + 8 liquid lines, tailpipe", "#3fae63"],
-  ["OPFPLG_Electrical", "Electronics deck & HV", "6 inverters, DC/DC, controller placeholder", "#ff7a1a"],
+  ["OPFPLG_Electrical", "Inverters & HV", "6 inverters on the housings, 900 V buses, DC/DC, controller", "#ff7a1a"],
   ["OPFPLG_Accumulator", "LTO power pack", "162 × Toshiba 20Ah-HP, 7.5 kWh", "#2a7fa0"],
   ["OPFPLG_Radiators", "Fan condensers", "finned annulus, 4 sectors per pusher", "#a3a9b2"],
   ["OPFPLG_Reference", "X1 reference", "old engine-bay box, pusher ducts", "#cc5500"],
 ];
-const GHOSTED = new Set(["LinGen_Housing", "Liner", "Stator_Coil", "Stator_Inner", "Intake_Belt", "Exhaust_Belt", "Cooling_Jacket", "Block_Body"]);
+const GHOSTED = new Set(["LinGen_Housing", "Liner", "Stator_Coil", "Stator_Inner", "Intake_Belt", "Exhaust_Belt", "Cooling_Jacket", "Block_Body", "Printed_Block", "Exhaust_Liner"]);
 const $ = id => document.getElementById(id);
 const stage = $("stage");
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -363,12 +369,13 @@ function panels() {
     ["Carrier disc to end cap, outer end", `${f1(d.clear.disc_cap_odc * 1000, 1)} mm`],
   ]);
   const M = P.mass;
+  $("flow").innerHTML = man.flow.rows.map(([k, v, t]) => `<span>${k}</span><span class="v">${f1(v)} / ${f1(t)} m/s</span><div class="t"><span style="width:${Math.min(100, v / t * 100).toFixed(0)}%;${v > t ? "background:#d64545" : ""}"></span></div>`).join("");
   dl("mass", [
     ["Stators, 6 sets", `${f1(M.stators_outer + M.stators_inner)} kg`],
     ["Moving parts, 6", `${f1(M.moving)} kg`],
     ["Block bore walls and galleries", `${f1(M.centre_sections)} kg`],
     ["Printed generator housings, 6", `${f1(M.housings)} kg`],
-    ["Block skin, bolt faces, mounts, bolts", `${f1(M.block_ties + M.fasteners)} kg`],
+    ["Block waist, chests, liner, mounts, bolts", `${f1(M.block_ties + M.fasteners)} kg`],
     ["Valves and injectors", `${f1(M.valves_injectors)} kg`],
     ["Engine", `${f1(M.engine)} kg`],
     ["Air path, electronics, cooling", `${f1(M.air_path + M.electronics + M.cooling)} kg`],
@@ -381,7 +388,8 @@ function panels() {
     ["Heat per piston circuit", `${f1(P.q_piston_kw)} kW`],
     ["Vapour per piston circuit", `${f1(P.vap_piston_gps)} g/s`],
     ["Charge air cooler", `${f1(P.cac_kw)} kW`],
-    ["Each auxiliary circuit", `${f1(P.q_aux_kw)} kW`],
+    ["Cooler hot stage, each circuit", `${f1(P.q_hot_kw)} kW at ${f1(P.T_cond_hot - 273.15)} °C`],
+    ["Each auxiliary circuit", `${f1(P.q_aux_kw)} kW at ${f1(P.T_cond_aux - 273.15)} °C`],
     ["Total to the pushers", `${f1(P.q_total_kw)} kW`],
     ["Fin area needed, 15 °C day", `${f1(P.hx_area_std)} m² per fan`],
     ["Fin area needed, 35 °C day", `${f1(P.hx_area_hot)} m² per fan`],
@@ -395,13 +403,15 @@ function panels() {
   $("issues").innerHTML = [
     ["Continuous force margin.", `The lighter stators run at ${f1(c.sig_rms / 1e3)} kPa rms shear, which is × ${f1(P.cont_margin, 2)} on the 85 kPa yardstick the first build was sized to (it had × 1.19). Peak margin is × ${f1(P.peak_margin, 2)}. The heat is small for boiling propane, so the limit is efficiency more than temperature, but more margin means more stator mass.`],
     ["Printed bore.", `${f1(c.p_max / 1e5)} bar in a printed aluminium bore with a coated surface needs fatigue testing. A thin steel sleeve as a fallback adds about 5 kg per cylinder.`],
-    ["Centre block.", `One printed aluminium piece about ${f1(2 * d.blk_face * 1000)} mm wide and ${f1((2 * d.pitch + 2 * d.flange_r) * 1000)} mm long, so it needs a printer with a build length over a metre. Wall thicknesses and the 16 × M8 bolt circles are rule of thumb, not stress analysis; each joint carries about ${f1(c.pb_max * Math.PI * d.r_hi * d.r_hi / 1e3)} kN of chamber pressure load.`],
-    ["Combustion-zone cooling.", "Each bore has a propane gallery printed into its wall right through the combustion zone, one half per piston circuit. Channel sizes and wall temperatures are not modelled yet."],
+    ["Centre block.", `One printed aluminium piece about ${f1(2 * d.blk_face * 1000)} mm wide and ${f1((2 * d.pitch + 2 * d.flange_r) * 1000)} mm long: a waist round the combustion zones, an air chest round the intake ports and an exhaust housing closed toward the stators, so the stator assemblies bolt to aluminium on both faces and never see exhaust gas. The ports sit on 270° arcs with the same heights and open area as before: exhaust ports face down, intake ports face up (bridges are now 5.9 mm, were 11.8). The exhaust housing's underside is open, so the manifold bolts on right under the bores: a short stainless collector wraps each ported arc and opens straight down through a 64 × 204 mm flange 21 mm under the port insert, 1.4 times the port area. The one-piece stainless manifold sits partly up inside the block and runs to the turbine. It clears the LTO pack (lowered 55 mm) by 51 mm after cylinder 1 and by 23 mm over the last 190 mm of the pack, behind a double radiant shield; heat into the pack and into the aluminium round the collectors is not modelled. The block needs a printer with a build length over a metre. Wall, rib and bolt sizes are rule of thumb, not stress analysis; each joint carries about ${f1(c.pb_max * Math.PI * d.r_hi * d.r_hi / 1e3)} kN of chamber pressure load, and the flat chest walls see the full boost and exhaust pressure.`],
+    ["Gas path.", "Every passage is inside its velocity target and the cooler core loses roughly 0.1 kPa. The cooler is narrow at the block, on the air-chest side, and flares to a 248 mm core and a rounded hot tank above; it stays 28 mm clear of the block's exhaust side with a double-skin heat shield following its underside; radiation and soak from the chest into the cooler are not modelled. The corner behind the block is tight: the riser passes 6 to 12 mm from the intake stator housing, the block, the turbo and the rear wing root. The cooler's thermal size and the gas-path pressure losses beyond the core are not modelled, only velocities."],
     ["Still over the mass budget.", `The package is about ${f1(M.package)} kg against 601 kg carried for generator plus pack in the airframe model.`],
-    ["Heat rejection.", `About ${f1(P.q_total_kw)} kW has to leave through the two pusher ducts. The fin pack (${f1(P.hx_area_pack)} m² per fan) covers a 15 °C day (${f1(P.hx_area_std)} m² needed) and is short on a 35 °C day (${f1(P.hx_area_hot)} m²). It costs pusher thrust, and hover at full power is not covered.`],
+    ["Heat rejection.", `About ${f1(P.q_total_kw)} kW has to leave through the two pusher ducts. The fin pack (${f1(P.hx_area_pack)} m² per fan) covers a 15 °C day (${f1(P.hx_area_std)} m² needed) and ${P.hx_area_hot <= P.hx_area_pack ? 'now covers' : 'is short on'} a 35 °C day (${f1(P.hx_area_hot)} m²), since the charge cooler's hot stage rejects at ${f1(P.T_cond_hot - 273.15)} °C. The charge cooler core as drawn gives about ${f1(P.cac_est.T_out - 273.15)} °C air, not the 62 °C the cycle assumes. It costs pusher thrust, and hover at full power is not covered.`],
     ["Efficiency.", `${f1(P.eta * 100, 1)} % fuel to DC. Aluminium windings cost about a point and a half of generator efficiency for roughly 150 kg.`],
     ["Stator materials.", "Tooth and yoke sizes for cobalt-iron, the aluminium slot fill and the 1.8 % core loss are estimates, not an electromagnetic model."],
-    ["Outside the old bay box.", "The cylinders and block fit the box. The e-turbo sits just aft of it, the cooler is in the spine and the electronics deck is ahead of the rear wing, all inside the skin line. Wing-root clearance uses an estimated lower surface and needs checking in the airframe model."],
+    ["Outside the old bay box.", "The cylinders and block fit the box. The e-turbo sits just aft of it, the cooler runs the length of all three cylinders in the spine and the inverters sit on the stator housings, all inside the skin line. Wing-root clearance uses an estimated lower surface and needs checking in the airframe model."],
+    ["Inverters on the housings.", "Each SiC inverter sits in a saddle on its stator housing, so the boiling propane inside (63 to 71 °C) is its cold plate; that is warm for SiC and the inverter heat (about 2.9 kW per piston) now loads the piston circuits. All six are turned 40° forward of the top, the same mount on every cylinder; the pair on cylinder 3 clears the estimated rear wing root by 19 mm. Vibration and heat soak from the block are not assessed."],
+    ["Sodium-cooled crowns.", `Each piston is one printed titanium piece (Ti-6242): a 1.8 mm gas plate on printed pillars, with about ${f1(d.na.m * 1000)} g of sodium in a half-filled gallery and a jacket down the skirt, filled through a port after printing and closed with a welded plug. It spreads ${f1(P.crown.fx_gas / 1e6, 2)} MW/m² on the gas face to ${f1(P.crown.fx_prop / 1e6, 2)} MW/m² on the finned propane side, ×${f1(P.crown.chf_margin, 1)} under the boiling limit, with the sodium near ${f1(P.crown.T_na - 273.15)} °C and the gas face near ${f1(P.crown.T_face - 273.15)} °C. The shaking heat-transfer rate, the fin gain and the boiling limit are estimates; the thin plate and pillars in fatigue, the plug weld, galling of the titanium skirt in the aluminium bore, sodium frozen at start-up and a crack into the cylinder are not assessed.`],
     ["Wet bounce chamber.", "Boiling inside a gas spring adds loss and noise to the return force. The model charges 2.4 % of the stored work per cycle; that number needs a rig."],
   ].map(([a, b]) => `<li><b>${a}</b> ${b}</li>`).join("");
   $("report").textContent = man.report;

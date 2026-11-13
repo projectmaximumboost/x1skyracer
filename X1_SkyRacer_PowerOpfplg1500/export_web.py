@@ -1,8 +1,7 @@
 """Export the OPFPLG model for the web viewer (JSON + float32/uint32 buffer) and as a GLB with animation."""
 import sys, json, math, struct, base64, os
 import numpy as np
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build'))
 import x1_opfplg_blender as m
 
 def tris(mesh):
@@ -52,9 +51,9 @@ def export_viewer(d, objs, report, ok, out_json, out_bin):
     c = m.CYCLE
     man = dict(materials=mats, objects=items, report=report, fits=ok,
                design={k: d[k] for k in ("B", "S", "disp", "m_move", "F_cont", "F_pk", "Lm", "r_mo", "r_ho", "zc", "y_T", "z_T",
-                                         "Vb_idc", "Vb_odc", "A_eff", "END", "pitch", "clear", "skirt_engaged", "blk_face", "flange_r", "r_hi", "Rb")},
+                                         "Vb_idc", "Vb_odc", "A_eff", "END", "pitch", "clear", "skirt_engaged", "blk_face", "flange_r", "r_hi", "Rb", "R_ch", "xi0", "xe0", "na")},
                cyl_y=d["cyl_y"], mass=d["mass"], perf={k: v for k, v in P.items()},
-               cycle={k: v for k, v in c.items() if k != "motion"}, motion=c["motion"], acc=d["acc"], env=m.ENV,
+               cycle={k: v for k, v in c.items() if k != "motion"}, motion=c["motion"], flow=dict(rows=d["flow"]["rows"]), acc=d["acc"], env=m.ENV,
                trace=json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'trace.json'))))
     json.dump(man, open(out_json, 'w'))
     open(out_bin, 'wb').write(bytes(buf))
@@ -135,14 +134,8 @@ def export_glb(d, objs, path):
 
 if __name__ == "__main__":
     d, objs, report, ok = gather()
-    os.makedirs(os.path.join(HERE, 'viewer'), exist_ok=True)
-    binp = os.path.join(HERE, 'opf_model.bin')
-    n = export_viewer(d, objs, report, ok, os.path.join(HERE, 'viewer', 'opf_model.json'), binp)
-    with open(binp, 'rb') as f_, open(os.path.join(HERE, 'viewer', 'opf_model.b64.txt'), 'w') as g_:
-        g_.write(base64.b64encode(f_.read()).decode())
-    os.remove(binp)
-    glb = os.path.join(HERE, 'X1_OPFPLG_1500hp.glb')
-    export_glb(d, objs, glb)
+    n = export_viewer(d, objs, report, ok, 'build/opf_model.json', 'build/opf_model.bin')
+    export_glb(d, objs, 'build/X1_OPFPLG_1500hp.glb')
     th = [2 * math.pi * k / 400 for k in range(400)]
     x = [m.piston_travel(t) for t in th]
-    print("viewer buffer", n, "glb", os.path.getsize(glb), "travel min/max mm", round(min(x) * 1e3, 2), round(max(x) * 1e3, 2), "stroke", m.CYCLE["stroke"])
+    print("viewer buffer", n, "glb", os.path.getsize('build/X1_OPFPLG_1500hp.glb'), "travel min/max mm", round(min(x) * 1e3, 2), round(max(x) * 1e3, 2), "stroke", m.CYCLE["stroke"])

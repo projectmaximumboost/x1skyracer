@@ -2,7 +2,7 @@
 import math, os, sys, json
 from opf_cycle import simulate, LHV, AFR_ST
 
-def run(m, d, lam=1.9, p_s=3.8e5, T_trap=380.0, cycles=160):
+def run(m, d, lam=1.9, p_s=3.8e5, T_trap=380.0, cycles=160, T_crown=480.0):
     """One operating point. Generator losses are worked out here from the force trace: winding loss follows
     force squared over the stator area actually covering the magnets, core loss is a share of converted energy."""
     A = d["A"]
@@ -10,7 +10,7 @@ def run(m, d, lam=1.9, p_s=3.8e5, T_trap=380.0, cycles=160):
     Qf = 0.90 * mt / AFR_ST / lam * LHV
     P = dict(B=d["B"], m=d["m_move"], x_po=d["x_po"], h_port=d["cb"] - d["x_po"], x_idc=d["g"], p_scav=p_s,
              T_trap=T_trap, Q_fuel=Qf, F_pk=d["F_pk"], F_cont=d["F_cont"], Vb_idc=d["Vb_idc"], r_in=1.0,
-             v_mean_est=10.5, cu_frac=0.0, fe_frac=0.0, P_rated=1.0, pb0=22e5)
+             v_mean_est=10.5, cu_frac=0.0, fe_frac=0.0, P_rated=1.0, pb0=22e5, T_crown=T_crown)
     r = simulate(P, cycles=cycles, trace=True)
     if not r["ok"]:
         return P, r
@@ -28,14 +28,14 @@ def run(m, d, lam=1.9, p_s=3.8e5, T_trap=380.0, cycles=160):
     r["e_cu"] = e_cu; r["sig_rms"] = math.sqrt(f2a * r["f"]); r["sig_pk"] = sig_pk
     r["E_el"] = r["E_mech"] * (1 - m.FE_FRAC) - e_cu
     r["P_el"] = r["E_el"] * r["f"]
-    r.update(Qf=Qf, lam_set=lam, p_s=p_s, T_trap=T_trap)
+    r.update(Qf=Qf, lam_set=lam, p_s=p_s, T_trap=T_trap, T_crown=T_crown)
     return P, r
 
 def pack(d, P, r):
     g = lambda k, nd=6: round(float(r[k]), nd)
     out = dict(f=g("f", 3), stroke=g("stroke", 5), x_min=g("x_min", 5), x_max=g("x_max", 5), cr=g("cr", 2), p_max=g("p_max", 0),
                v_mean=g("v_mean", 3), v_max=g("v_max", 3), Qf=round(r["Qf"], 2), E_el=g("E_el", 2), E_mech=g("E_mech", 2),
-               W_gas=g("W_gas", 2), Q_wall=g("Q_wall", 2), W_fric=g("W_fric", 2), F_rms=g("F_rms", 0), F_peak=g("F_peak", 0),
+               W_gas=g("W_gas", 2), Q_wall=g("Q_wall", 2), Q_crown=g("Q_crown", 2), T_crown=round(r["T_crown"], 1), W_fric=g("W_fric", 2), F_rms=g("F_rms", 0), F_peak=g("F_peak", 0),
                pb_min=g("pb_min", 0), pb_max=g("pb_max", 0), pb_mean=g("pb_mean", 0), m_trap=g("m_trap", 6), p_s=r["p_s"],
                lam=round(r["lam"], 3), T_trap=r["T_trap"], imep=g("imep", 0), motion=[])
     for k in ("e_cu", "sig_rms", "sig_pk"):
@@ -47,18 +47,20 @@ def tune(target_hp=1520.0, p_s=3.8e5, here=None):
     sys.path.insert(0, here if os.path.exists(os.path.join(here, 'x1_opfplg_blender.py')) else os.path.join(here, 'build'))
     import x1_opfplg_blender as m
     d = m.design()
-    lam = 1.85
-    for it in range(8):
-        P, r = run(m, d, lam=lam, p_s=p_s)
+    lam, T_crown = 1.85, 700.0
+    for it in range(10):
+        P, r = run(m, d, lam=lam, p_s=p_s, T_crown=T_crown)
         assert r["ok"], r
         cyc = pack(d, P, r)
         m.CYCLE.clear(); m.CYCLE.update(cyc)
         perf = m.performance(d)
         print("lam %.3f f %.2f net %.0f hp eta %.3f Frms %.2f kN shear %.0f/%.0f kPa pmax %.0f" % (
             lam, r["f"], perf["net_hp"], perf["eta"], r["F_rms"] / 1e3, r["sig_rms"] / 1e3, r["sig_pk"] / 1e3, r["p_max"] / 1e5))
-        if abs(perf["net_hp"] - target_hp) < 4: break
+        T_new = perf["crown"]["T_face"]
+        if abs(perf["net_hp"] - target_hp) < 4 and abs(T_new - T_crown) < 4: break
+        T_crown = 0.5 * (T_crown + T_new)
         lam *= (perf["net_hp"] / target_hp) ** 0.9
-    Pb, rb = run(m, d, lam=1.60, p_s=4.1e5)
+    Pb, rb = run(m, d, lam=1.60, p_s=4.1e5, T_crown=T_crown + 30.0)
     cyc["burst"] = dict(p_s=4.1e5, lam=1.60, bus_hp=round(6 * rb["P_el"] * 0.985 / 745.7, 0), p_max=round(rb["p_max"], 0),
                         f=round(rb["f"], 2), F_rms=round(rb["F_rms"], 0), sig_pk=round(rb["sig_pk"], 0))
     tr = r["trace"]

@@ -90,7 +90,7 @@ The white paper's goal is a personal flying car safer than walking, driving and 
 
 ## Maximum Power
 
-The powertrain is a series hybrid: a free-piston linear generator charges a small accumulator (10 kWh at most under the rule book), and electric fans do the flying. A racing-grade engine can run at richer, hotter settings than a road car's emissions rules allow. The program targets **60% brake thermal efficiency** to start, and its opposed free-piston design aims for the high 60s. For scale, a linear generator the U.S. Air Force has deployed at Travis Air Force Base reaches about 46%. The paper argues this beats a grid-charged battery car, which comes out around 25 to 32% from fuel to wheel. It also scales without waiting on the grid. Details are in the [OPFPLG working paper](https://x1racing.com/files/OPFPLG_First_Principles_SSRN_Working_Paper_MAXIMUM_BOOST.pdf) and the [folder in this repo](OPFPLG/). The lightweight 1,500 hp continuous build (150 × 124 mm, about 1,519 hp continuous) is in [`X1_SkyRacer_PowerOpfplg1500/`](X1_SkyRacer_PowerOpfplg1500/).
+The powertrain is a series hybrid: a free-piston linear generator charges a small accumulator (10 kWh at most under the rule book), and electric fans do the flying. A racing-grade engine can run at richer, hotter settings than a road car's emissions rules allow. The program targets **60% brake thermal efficiency** to start, and its opposed free-piston design aims for the high 60s. For scale, a linear generator the U.S. Air Force has deployed at Travis Air Force Base reaches about 46%. The paper argues this beats a grid-charged battery car, which comes out around 25 to 32% from fuel to wheel. It also scales without waiting on the grid. Details are in the [OPFPLG working paper](https://x1racing.com/files/OPFPLG_First_Principles_SSRN_Working_Paper_MAXIMUM_BOOST.pdf) and the [folder in this repo](OPFPLG/). The lightweight 1,500 hp continuous build (150 × 124 mm, about 1,520 hp continuous) is in [`X1_SkyRacer_PowerOpfplg1500/`](X1_SkyRacer_PowerOpfplg1500/).
 
 ## See it and build your own
 
@@ -195,7 +195,7 @@ This repository is public and read-only. Anyone can view and clone it. Only invi
 | `x1_skyracer_blender.py` | The script that builds the latest SkyRacer 3D model in Blender. This is the design. |
 | `X1_SkyRacer_FanTilt/` | The latest design study: results, rule report, analysis scripts, images and the web viewer |
 | `x1_opfplg_blender.py`, `OPFPLG/`, `X1_OPFPLG.glb` | The opposed twin free-piston linear generator (OPFPLG) power plant models |
-| `X1_SkyRacer_PowerOpfplg1500/` | The 1,500 hp continuous lightweight OPFPLG (150 × 124 mm, about 1,519 hp continuous): GLB, Blender and cycle scripts, previews, fit report and viewer |
+| `X1_SkyRacer_PowerOpfplg1500/` | The 1,500 hp continuous lightweight OPFPLG (150 × 124 mm, about 1,520 hp continuous): GLB, Blender and cycle scripts, previews, fit report and viewer |
 | `rule-book/` | A copy of the X1 Racing Rule Book |
 | `assets/` | The logo and the SkyRacer picture |
 

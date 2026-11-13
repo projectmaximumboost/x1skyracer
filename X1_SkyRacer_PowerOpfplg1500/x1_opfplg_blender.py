@@ -7,7 +7,8 @@ heat-exchanger idea, but every part is now sized from a free-piston cycle model 
 instead of an assumed 100 Hz.
 
 What it builds (collection "X1_OPFPLG"):
-  * 3 opposed-piston cylinders across the airframe, 6 free pistons, uniflow two-stroke, propane DI.
+  * 3 opposed-piston cylinders across the airframe, 6 free pistons (sodium-filled, printed titanium), uniflow
+    two-stroke, propane DI.
     150 mm bore x 124 mm stroke per piston (13.1 L), about 45 Hz, 120 deg between cylinders,
     the two pistons of a cylinder mirror each other exactly (taller exhaust ports give the lead).
   * each piston carries a folded "bell" translator: a tail tube runs out of the open liner end to a
@@ -16,12 +17,28 @@ What it builds (collection "X1_OPFPLG"):
     (inner stator around the liner; the outer stator stops 60 % of the stroke short of the outer dead
     centre, where the generating force is low). Lightweight build: aluminium windings on cobalt-iron cores.
   * printed aluminium block: each cylinder is a coated-bore centre section (20 mm combustion band, 6 mm
-    elsewhere). ONE metal-printed centre block (collection OPFPLG_Block) holds the three bores, the intake
-    and exhaust port galleries, the injector bosses and, printed into the bore walls, a propane cooling
-    gallery right through the combustion zone of each cylinder (one half per piston circuit: liquid from
-    that piston's check valve goes through the block first, then into its chamber). The intake plenum and
-    exhaust collector are printed onto the block top. Each side of the block has a bolt face; the six stator
-    assemblies (4.5 mm housing, both stators, liner extension, end cap) bolt on with 16 x M8 each.
+    elsewhere). ONE metal-printed centre block (collection OPFPLG_Block): a slim waist round the combustion
+    zones (injector bosses, a propane cooling gallery in each bore wall, one half per piston circuit) and the
+    AIR CHEST round the three intake port rings. On the exhaust side the block has a closing wall toward
+    the stators, so the six stator assemblies (4.5 mm housing, both stators, liner extension, end cap) bolt to
+    aluminium on both faces, 16 x M8 each, and never see exhaust gas. The ports are on arcs, not all round: 12 ports
+    on 270 deg, exhaust centred on straight DOWN, intake on straight UP, with the same heights (timing) and open
+    area as before. Each bore carries a printed steel exhaust-port insert, and the exhaust housing's
+    underside is open: a short stainless COLLECTOR wraps the ported arc and opens straight down through a
+    64 x 204 mm flange only 21 mm under the port insert. A separate one-piece stainless MANIFOLD bolts to the
+    three flanges; its upper part sits up inside the block and a lower part grows below the block as each
+    cylinder joins, then it turns round into the bottom of the turbine volute. The pack is lowered 55 mm
+    for it, with a double radiant shield between.
+  * gas path: compressor -> riser up behind the block -> stacked charge air cooler in the spine: a hot
+    plenum on top, a wide shallow core the air passes straight down through, and a cold plenum underneath
+    that drains through its floor into the air chest along its whole length. The cold plenum is a
+    narrow neck on the air-chest side that flares out under a wide core and a rounded, ribbed hot tank; the wide
+    part sits above the block's exhaust side, 28 mm clear at the closest point, with a formed double-skin heat shield
+    following the underside. Exhaust chest -> rear outlet ->
+    bottom inlet of the turbine volute. Every passage sized for velocity (see GAS PATH in the report).
+  * sodium-cooled crowns: each piston is one printed titanium piece with a sealed, half-filled sodium gallery under
+    a thin gas plate held by printed pillars, carried 75 mm down a jacket inside the skirt. The sodium shakes between the two and spreads the crown
+    heat (about 1 MW/m2 on the gas face) over a finned wall where the propane can boil it off (about 0.27 MW/m2).
   * the sealed volume behind each piston (linear-generator housing) is that piston's own propane
     circuit: liquid enters through a check valve and a spray lance up the hollow tail onto the crown
     underside and through the stator slots, boils, and leaves through a BLEED VALVE to its own sector
@@ -29,12 +46,15 @@ What it builds (collection "X1_OPFPLG"):
     loop; the bleed valve sets the mean pressure = boiling temperature = bounce (return) force.
   * charge air cooler in the spine over the engine (air to boiling propane), feeding the intake plenum;
     exhaust collector beside it, electric turbo-compound unit aft.
-  * power-electronics deck ahead of the rear wing: 6 SiC inverters (one per stator set), DC/DC to the
-    373 V LTO pack, and ONE placeholder box for control electronics and sensors. Inverter cold plates
-    and the charge air cooler share two auxiliary propane circuits (left / right).
+  * power electronics: a SiC inverter on top of each stator housing (six, one per stator set), seated in a
+    saddle so the housing wall is its cold plate (the chamber below boils propane at 63-71 C); all six are
+    turned 40 deg forward of the top, which is what clears the rear wing root on cylinder 3. A 900 V bus runs along each side over the
+    housings; the DC/DC to the 373 V LTO pack and ONE placeholder box for control electronics and sensors sit
+    beside the pack. The DC/DC, controller and the cooler's cold stage share two auxiliary propane circuits;
+    the cooler's hot stage (top half of the core, 212 C to 110 C) has its own two circuits condensing at 82 C.
   * 162-cell LTO accumulator under the engine, unchanged.
-  * pusher-fan condensers: annular finned cores behind each fan, four sectors each
-    (three piston circuits + one auxiliary circuit). Thin cambered fins only, no thick vanes: about 20 deg
+  * pusher-fan condensers: annular finned cores behind each fan, five sectors each
+    (three piston circuits, the hot charge-cooler stage and the auxiliary circuit, sized by heat and temperature). Thin cambered fins only, no thick vanes: about 20 deg
     at the leading edge against the rotor swirl, axial at the trailing edge; the propane runs in the splitter rings.
 
 Coordinates match x1_skyracer_blender.py: metres, nose toward -Y, Z up, origin on the ground.
@@ -64,7 +84,9 @@ PRESETS = {
     "1500hp": dict(bore=0.150, x_po=0.100, cr=16.0,
                    note="lightweight build: 150 bore x 124 stroke per piston, 13.1 L, aluminium windings, printed block"),
 }
-N_PORTS = 16                # port holes per ring, evenly spaced all the way round
+N_PORTS = 12                # port holes per ring, within the ported arc
+PORT_ARC_DEG = 270.0        # ported arc of each ring: exhaust ports centred on straight DOWN, intake ports on straight UP
+PORT_OPEN = 0.80            # open share of the ported arc (the rest is bridges); arc x open = 60 % of the circumference, as before
 N_FINS_DRAWN = 78           # thin condenser fins drawn per pusher (about 1/10 of the real count)
 FIN_CAMBER = 0.18           # fin camber: leading-edge angle = atan(2 x camber), about 20 deg against the rotor swirl
 OUT_DIR = os.path.join(os.path.expanduser("~"), "X1_Racer")   # where your X1 files live
@@ -85,39 +107,81 @@ FE_FRAC = 0.018             # core loss, share of converted energy (cobalt-iron 
 Q_CU_REF = 33.5e3           # W per m2 of air gap: reference copper winding loss at 85 kPa shear
 T_LINER, T_BAND, L_BAND = 0.006, 0.020, 0.035   # printed bore wall, combustion band thickness and half length
 T_HOUSING = 0.0045          # printed generator housing wall (26 bar propane)
+# gas path (Nov 2026 flow revision): air and exhaust chests in the block, engine and pack lowered
+ACC_DROP = 0.055            # LTO pack lowered from the bay-box layout to make room for the exhaust manifold under the block (the engine stays put)
+CHEST_WALL = 0.018          # chest outer wall to the bolt circle (bolts thread into it; ribbed, ~40 % solid)
+CAC_X = (-0.140, 0.108)     # charge air cooler x range at the core and hot tank (wide up top)
+CAC_NECK_X = 0.008          # the cold plenum's +x wall low down: a narrow neck on the air-chest side, clear of the exhaust chest
+CAC_NECK_H = 0.023          # height of the neck above the block top before the plenum flares out under the core
+CAC_BAY_X = (-0.112, 0.108) # x range of the hot plenum's rear bay, where the riser comes up (behind the block)
+CAC_EX_GAP_MIN = 0.025      # least air gap wanted between the cooler and the exhaust chest (m)
+EX_BELT_R, EX_BELT_T = 0.150, 0.0015   # exhaust collector under each bore: outer radius round the side ports, stainless wall
+EX_FLANGE_D = 0.110                    # manifold flange face below the bore axis: 21 mm under the port insert (the block's underside is open there)
+EX_THROAT_Y = 2 * math.sqrt(EX_BELT_R ** 2 - EX_FLANGE_D ** 2)   # flange opening along the manifold: the full width of the collector at that depth
+EX_THROAT_X1 = 0.116                   # outboard edge of the flange opening; the lowest stator bolts keep their bosses outboard of it
+EX_MAN_TOP = (0.064, 0.070)            # manifold upper part, recessed into the block's underside: width x height
+EX_MAN_BOT = ((0.064, 0.010), (0.142, 0.038), (0.110, 0.050), (0.130, 0.074))   # lower part below the block: after cylinder 1, at the pack's rear end (1 + 2), behind the pack, after cylinder 3
+RHO_SS = 7900.0
+INV_TILT_DEG = (40.0, 40.0, 40.0)   # inverter mount angle on each cylinder's housings, from the top toward the front
 TURBO_KA = 0.82             # axial scale: shorter shaft line, the fuselage is already narrowing at the turbo
+
+# sodium-cooled piston crown (Nov 2026): a sealed, half-filled gallery under the gas plate, carried down a jacket inside
+# the top of the skirt. The sodium shakes between the crown and the jacket ("cocktail shaker") and spreads the crown
+# heat over a larger, finned wall where the propane boils it off below its boiling limit.
+# The piston is ONE printed titanium piece (Ti-6242): gas plate, pillars, gallery, back plate, jacket and skirt. It is
+# printed hollow with a port, drained of powder, filled with sodium under argon and closed with a welded plug.
+NA_T_PLATE, NA_K_PLATE = 0.0018, 9.0     # gas plate: thickness (m), conductivity (W/m K, Ti-6242 at about 350 C)
+NA_PILLAR_PITCH, NA_PILLAR_D = 0.008, 0.002   # printed pillars holding the thin gas plate against cylinder pressure
+NA_H_GAL, NA_T_BACK = 0.010, 0.0025      # gallery height, back plate
+NA_L_JACKET, NA_GAP = 0.075, 0.004       # jacket length down the skirt, sodium annulus
+NA_T_WALL, NA_K_WALL = 0.0012, 8.0       # jacket inner wall: titanium conducts poorly, which keeps the sodium molten
+T_SKIRT = 0.002                          # printed titanium skirt wall
+RHO_TI62, TI_T_LIMIT = 4540.0, 813.0     # Ti-6242 density; long-term service limit about 540 C
+NA_FILL, RHO_NA, NA_T_MELT = 0.50, 927.0, 371.0
+NA_H_SHAKE = 20e3                        # W/m2 K, shaken liquid sodium on a wall (estimate)
+NA_FIN = 1.6                             # low fins on the propane side of the jacket and back plate: wetted / plain area
+CHF_PROPANE = 0.41e6                     # W/m2, pool-boiling limit of propane near 24 bar (Zuber estimate)
+
+# two-stage charge air cooler (Nov 2026): the top half of the core is a HOT stage that takes the air from the compressor
+# temperature down to CAC_T_MID on its own propane circuits condensing at T_COND_HOT; the bottom half is the cold stage
+# on the auxiliary circuits. Rejecting most of the charge heat at 80 C instead of 59 C needs far less condenser.
+CAC_T_MID = 383.0           # K, charge air between the stages (110 C)
+T_COND_HOT = 355.0          # K, hot-stage circuits condense at 82 C (about 32 bar)
+CAC_BETA, CAC_H_AIR = 1500.0, 250.0   # core surface per volume (m2/m3) and air-side coefficient (W/m2 K): estimates
 
 # Cycle-model result for this geometry (written by tune_cycle.py from opf_cycle.py; per piston).
 CYCLE = dict(
-    f=44.932,
+    f=46.091,
     stroke=0.12375,
     x_min=0.00625,
     x_max=0.13,
     cr=16.0,
-    p_max=22533206.0,
-    v_mean=11.12,
-    v_max=21.963,
-    Qf=9170.57,
-    E_el=4233.66,
-    E_mech=4487.37,
-    W_gas=4709.63,
-    Q_wall=792.67,
-    W_fric=76.93,
-    F_rms=16027.0,
-    F_peak=27980.0,
-    pb_min=2238156.0,
-    pb_max=2632479.0,
-    pb_mean=2467116.0,
+    p_max=21984495.0,
+    v_mean=11.408,
+    v_max=22.382,
+    Qf=8869.03,
+    E_el=4133.46,
+    E_mech=4372.44,
+    W_gas=4595.13,
+    Q_wall=631.03,
+    Q_crown=357.11,
+    T_crown=665.2,
+    W_fric=76.76,
+    F_rms=15626.0,
+    F_peak=27117.0,
+    pb_min=2238292.0,
+    pb_max=2628827.0,
+    pb_mean=2465211.0,
     m_trap=0.006156,
     p_s=380000.0,
-    lam=1.787,
+    lam=1.848,
     T_trap=380.0,
-    imep=2153683.0,
-    motion=[0.0, 0.000462, 0.002135, 0.004994, 0.008772, 0.013152, 0.017898, 0.02285, 0.027906, 0.032995, 0.038069, 0.04309, 0.048033, 0.052877, 0.057606, 0.062208, 0.066674, 0.070996, 0.075169, 0.079188, 0.08305, 0.086751, 0.090291, 0.093668, 0.096879, 0.09991, 0.102754, 0.105407, 0.10787, 0.110144, 0.11223, 0.114132, 0.115852, 0.117393, 0.11876, 0.119953, 0.120976, 0.121834, 0.122529, 0.123064, 0.123441, 0.123664, 0.123738, 0.123668, 0.123453, 0.123101, 0.122615, 0.121998, 0.121251, 0.120379, 0.119384, 0.118269, 0.117035, 0.115686, 0.114225, 0.112653, 0.110975, 0.109191, 0.107304, 0.105318, 0.103234, 0.101054, 0.098782, 0.09642, 0.093969, 0.091432, 0.088813, 0.086114, 0.083339, 0.08049, 0.077572, 0.074587, 0.071539, 0.068432, 0.06527, 0.062056, 0.058795, 0.05549, 0.052148, 0.048773, 0.04537, 0.041946, 0.038507, 0.035062, 0.03162, 0.028191, 0.024788, 0.021427, 0.018128, 0.014916, 0.011824, 0.008897, 0.0062, 0.00382, 0.001883, 0.000549],
-    e_cu=172.94,
-    sig_rms=82405.97,
-    sig_pk=121251.04,
-    burst={'p_s': 410000.0, 'lam': 1.6, 'bus_hp': 1900.0, 'p_max': 24735692.0, 'f': 47.36, 'F_rms': 19253.0, 'sig_pk': 147267.0},
+    imep=2101271.0,
+    motion=[0.0, 0.000453, 0.002087, 0.004881, 0.008593, 0.01291, 0.0176, 0.022506, 0.027521, 0.032576, 0.03762, 0.042617, 0.047539, 0.052366, 0.057083, 0.061676, 0.066135, 0.070455, 0.074627, 0.078649, 0.082516, 0.086224, 0.089773, 0.093162, 0.096386, 0.099436, 0.102301, 0.104978, 0.107466, 0.109766, 0.111879, 0.113809, 0.115558, 0.117129, 0.118525, 0.119748, 0.120802, 0.121691, 0.122415, 0.12298, 0.123388, 0.123641, 0.123743, 0.123694, 0.123509, 0.123186, 0.122728, 0.122139, 0.12142, 0.120575, 0.119605, 0.118514, 0.117304, 0.115979, 0.114539, 0.112988, 0.111329, 0.109563, 0.107694, 0.105724, 0.103655, 0.101489, 0.099229, 0.096878, 0.094437, 0.091908, 0.089296, 0.086602, 0.08383, 0.080983, 0.078065, 0.075079, 0.072028, 0.068917, 0.065748, 0.062526, 0.059256, 0.05594, 0.052585, 0.049195, 0.045776, 0.042334, 0.038876, 0.035409, 0.031944, 0.028491, 0.025062, 0.021674, 0.018345, 0.015103, 0.011979, 0.009021, 0.006291, 0.003878, 0.001913, 0.000559],
+    e_cu=160.27,
+    sig_rms=80351.72,
+    sig_pk=117709.27,
+    burst={'p_s': 410000.0, 'lam': 1.6, 'bus_hp': 1973.0, 'p_max': 24367750.0, 'f': 48.83, 'F_rms': 19385.0, 'sig_pk': 148035.0},
 )
 
 
@@ -262,16 +326,23 @@ MATS = {
     "CAC_Fin":          ((0.82, 0.85, 0.88), 1.0, 0.35, 1.0),
     "Aux_Vapour":       ((0.98, 0.60, 0.20), 0.3, 0.40, 1.0),
     "Aux_Liquid":       ((0.15, 0.70, 0.72), 0.3, 0.40, 1.0),
+    "Port_Insert":      ((0.42, 0.40, 0.38), 1.0, 0.35, 1.0),
+    "Hot_Aux_Vapour":   ((0.93, 0.28, 0.22), 0.3, 0.40, 1.0),
+    "Hot_Aux_Liquid":   ((0.55, 0.30, 0.75), 0.3, 0.40, 1.0),
     "Heat_Shield":      ((0.85, 0.80, 0.62), 1.0, 0.30, 1.0),
     "Deck":             ((0.20, 0.22, 0.25), 0.7, 0.50, 1.0),
     "Cold_Plate":       ((0.15, 0.70, 0.72), 0.6, 0.30, 1.0),
     "DCDC":             ((0.30, 0.24, 0.36), 0.8, 0.40, 1.0),
     "Controller":       ((0.85, 0.15, 0.55), 0.2, 0.50, 0.75),
     "AC_Lead":          ((0.90, 0.55, 0.20), 0.4, 0.40, 1.0),
+    "Sodium":           ((0.95, 0.80, 0.25), 0.9, 0.25, 1.0),
     "HX_Fin":           ((0.70, 0.72, 0.76), 0.8, 0.50, 0.55),
-    "Printed_Block":    ((0.60, 0.63, 0.67), 0.9, 0.55, 1.0),
-    "Block_Body":       ((0.56, 0.60, 0.66), 0.9, 0.50, 0.60),
+    "Printed_Block":    ((0.60, 0.63, 0.67), 0.9, 0.55, 0.28),
+    "Block_Body":       ((0.56, 0.60, 0.66), 0.9, 0.50, 0.28),
     "Bolt":             ((0.16, 0.17, 0.19), 1.0, 0.40, 1.0),
+    "Intake_Gas":       ((0.30, 0.55, 0.95), 0.0, 0.40, 0.28),
+    "Exhaust_Gas":      ((0.95, 0.45, 0.20), 0.0, 0.40, 0.28),
+    "Exhaust_Liner":    ((0.72, 0.68, 0.62), 1.0, 0.35, 0.55),
     "Stator_Coil":      ((0.80, 0.83, 0.88), 0.6, 0.35, 0.45),
     "Stator_Inner":     ((0.72, 0.78, 0.86), 0.6, 0.35, 0.50),
 }
@@ -575,6 +646,11 @@ class Obj:
 RHO_MAGNET, RHO_STEEL, RHO_AL, RHO_TI, RHO_CFRP = 7600.0, 7850.0, 2700.0, 4430.0, 1600.0
 
 
+ACC_TOP0 = ACC_TOP_BAY                        # pack lid height in the bay-box layout: the engine and electronics stay on this
+ACC_TOP_BAY = ACC_TOP_BAY - ACC_DROP          # pack lowered below the bay box (not counted in the engine space)
+ACC_C = (ACC_C[0], ACC_C[1], ACC_C[2] - ACC_DROP)
+
+
 def stator_cover(d, travel):
     """Share of the magnet sleeve inside the (outer, inner) stator at this outward travel from the inner dead centre."""
     b1 = d["disk0"] + travel
@@ -625,8 +701,12 @@ def design(preset=None):
     d["r_ho"] = d["r_hi"] + T_HOUSING                       # housing: ~30 bar propane vessel
     d["flange_r"] = d["r_ho"] + 0.016                    # bolt flange: 16 x M8 on a circle just outside the housing
     d["r_bolt"] = d["r_ho"] + 0.008
-    d["Rb"] = d["r_b"] + 0.012                          # centre block outer radius about each bore
+    d["Rb"] = d["r_b"] + 0.012                          # waist outer radius about each bore
+    d["R_ch"] = d["flange_r"] - CHEST_WALL              # chest inner radius (racetrack round the three bores)
+    d["r_sl"] = d["r_li"] + 0.014                       # thick printed sleeve where the bores cross the chests
     d["blk_face"], d["blk_tf"] = d["h0"] - 0.008, 0.012   # block bolt face (x from centre), block flange thickness
+    d["xi0"] = d["cb"] - d["h_in"] - 0.040              # air chest: x from -blk_face to -xi0
+    d["xe0"] = d["cb"] - d["h_ex"] - 0.058              # exhaust chest: x from xe0 to blk_face
     d["si_u0"], d["si_u1"] = d["h0"] + 0.010, d["L_l"]
     d["so_u0"], d["so_u1"] = d["h0"] + 0.010, d["disk0"] + S + 0.004 - STATOR_TRIM * S
     # ---- generator force rating
@@ -654,10 +734,22 @@ def design(preset=None):
     m_sleeve = 2 * math.pi * 0.5 * (d["r_mo"] + d["r_mi"]) * d["Lm"] * 2 * 0.0012 * RHO_CFRP   # retaining wraps
     m_disk = 0.35 * math.pi * (d["r_mo"] ** 2 - d["r_tail"] ** 2) * d["t_disk"] * RHO_TI       # spoked, 35 % solid
     m_tail = 2 * math.pi * d["r_tail"] * 0.0025 * (d["L_tail"] + 0.02) * RHO_TI
-    m_crown = math.pi * d["r_li"] ** 2 * 0.012 * RHO_STEEL
-    m_skirt = 2 * math.pi * d["r_li"] * 0.003 * (d["Lp"] - 0.02) * RHO_AL
-    d["mass"] = dict(magnets=m_mag, sleeve=m_sleeve, disc=m_disk, tail=m_tail, crown=m_crown, skirt=m_skirt,
-                     rings_web=0.6)
+    # one-piece printed titanium piston: gas plate + back plate + pillars and a 2.5 mm rim, jacket wall, and a 2 mm
+    # titanium skirt over its whole length
+    rl = d["r_li"]
+    r_j1 = rl - 0.002                                   # jacket outer wall (the skirt), inside radius
+    r_j0 = r_j1 - NA_GAP                                # jacket inner wall, sodium side
+    pil = math.pi / 4 * (NA_PILLAR_D / NA_PILLAR_PITCH) ** 2 + 0.03       # pillar share of the gallery, plus a few ribs
+    m_crown = (math.pi * rl ** 2 * (NA_T_PLATE + NA_T_BACK + pil * NA_H_GAL)
+               + 2 * math.pi * rl * 0.0025 * NA_H_GAL) * RHO_TI62
+    m_jacket = 2 * math.pi * r_j0 * NA_T_WALL * NA_L_JACKET * NA_FIN ** 0.5 * RHO_TI62   # inner wall with its low fins
+    v_na = (1 - pil) * math.pi * (rl - 0.0025) ** 2 * NA_H_GAL + math.pi * (r_j1 ** 2 - r_j0 ** 2) * NA_L_JACKET
+    m_na = NA_FILL * v_na * RHO_NA
+    m_skirt = 2 * math.pi * rl * T_SKIRT * (d["Lp"] - NA_T_PLATE - NA_H_GAL) * RHO_TI62
+    d["na"] = dict(plate_mpa=0.31 * (NA_PILLAR_PITCH - NA_PILLAR_D) ** 2 / NA_T_PLATE ** 2, r_j0=r_j0, r_j1=r_j1, v=v_na, m=m_na,
+                   a_sink=math.pi * (r_j0 ** 2 - d["r_tail"] ** 2) + 2 * math.pi * (r_j0 - NA_T_WALL) * NA_L_JACKET)
+    d["mass"] = dict(magnets=m_mag, sleeve=m_sleeve, disc=m_disk, tail=m_tail, crown=m_crown, jacket=m_jacket,
+                     sodium=m_na, skirt=m_skirt, rings_web=0.6)
     d["m_move"] = sum(d["mass"].values())
     # ---- bounce / propane chamber gas volume (one side) at inner dead centre
     hl = (d["END"] - d["t_cap"]) - (d["h0"] + 0.008)
@@ -669,7 +761,7 @@ def design(preset=None):
     d["Vb_idc"] = v_gross - v_liner - v_si - v_so - v_move
     d["Vb_odc"] = d["Vb_idc"] - A * S
     # ---- layout in the craft
-    d["zc"] = ACC_TOP_BAY + 0.010 + d["flange_r"]       # cylinder axis height: 10 mm over the accumulator
+    d["zc"] = ACC_TOP0 + 0.010 + d["flange_r"]       # cylinder axis height: 10 mm over the accumulator
     d["pitch"] = 2 * d["flange_r"] + 0.008
     y0 = ENV["y"][0] + 0.005 + d["flange_r"]
     d["cyl_y"] = [y0 + k * d["pitch"] for k in range(3)]
@@ -678,21 +770,21 @@ def design(preset=None):
     d["scroll_R0"], d["scroll_rbig"] = 0.060, 0.055     # before the radial scale
     d["r_ca"] = 0.055 * k                               # charge-air and pre-turbine pipes
     d["r_cin"] = 0.075 * k
-    d["r_dp"] = 0.100                                   # downpipe
+    d["r_dp"] = 0.122                                   # downpipe
     d["turbo_r"] = (d["scroll_R0"] + 2 * d["scroll_rbig"]) * k
     d["y_T"] = d["y_A"] + 0.008 + d["turbo_r"]          # turbo shaft line, volutes just clear the bank
     d["z_T"] = 0.640                                    # lower than the cylinders: clears the rear wing root
-    # manifolds over the port belts, in the spine between the generator housings
-    d["px_in"], d["px_out"] = 0.022, d["h0"] - 0.024
-    d["pz_bot"], d["pz_top"] = d["zc"] + d["r_b"] - 0.004, ENV["z"][1] - 0.006
-    d["col_top"] = 0.930                                # exhaust collector rises into the spine aft of the deck
-    d["pl_w"] = d["px_out"] - d["px_in"]
     d["x_in"] = -(d["cb"] - d["h_in"] / 2)
     d["x_ex"] = d["cb"] - d["h_ex"] / 2
     d["disp_cyl"] = 2 * A * S
     d["disp"] = 3 * d["disp_cyl"]
     # charge air cooler (spine, between the rear wing roots) and power-electronics deck (ahead of the wing)
-    d["cac"] = dict(hw=0.140, y0=0.640, y1=1.240, z0=0.945, z1=1.035, yf=0.580, ya=1.385)
+    # stacked charge air cooler over the block: cold plenum (on the block) | core, flow straight down | hot plenum
+    # (tapered, fed at the rear by the riser). It drains through its floor into the air chest.
+    zt_ = d["zc"] + d["flange_r"]
+    d["cac"] = dict(x0=CAC_X[0], x1=CAC_X[1], xc=sum(CAC_X) / 2, hw=(CAC_X[1] - CAC_X[0]) / 2, xr0=CAC_BAY_X[0], xr1=CAC_BAY_X[1], xn=CAC_NECK_X, zk=zt_ + 0.001 + CAC_NECK_H, y0=d["cyl_y"][0] - 0.170, y1=1.190, ya=1.330,   # over all three cylinders; hot plenum to ya
+                    zp0=zt_ + 0.001, z0=zt_ + 0.046, z1=zt_ + 0.106,  # cold plenum floor, core bottom, core top (60 mm core)
+                    zr0=zt_ + 0.096)                                  # riser bay floor; hot plenum top follows the skin
     d["deck"] = dict(hw=0.360, y0=0.155, y1=0.565, z=0.884)
     return d
 
@@ -725,19 +817,60 @@ HX_Z_LE, HX_CHORD = 0.05, 0.14
 # line heights in the side trays (craft z): liquid below vapour, cylinder 1 innermost of the nest
 TRAY_Z_LIQ = (0.752, 0.734, 0.716)
 TRAY_Z_VAP = (0.775, 0.803, 0.831)
-AUX_SPAN_DEG = 171.0        # share of each condenser annulus given to the auxiliary circuit
+AUX_SPAN_DEG = 76.0         # share of each condenser annulus given to the auxiliary (cold-stage) circuit
+HOT_SPAN_DEG = 84.0         # ... and to the hot-stage charge-cooler circuit
 
 
 def sector_table(sgn):
     """Condenser sectors of one pusher: (name, centre angle, span) in the pusher frame
-    (0 = +X, 90 deg = down). Three piston circuits share the lower arc, the auxiliary circuit the top."""
-    span = (360.0 - AUX_SPAN_DEG) / 3.0
+    (0 = +X, 90 deg = down). Three piston circuits share the lower arc; the top arc is split between the
+    auxiliary circuit (outboard) and the hot-stage charge-cooler circuit (inboard)."""
+    top = AUX_SPAN_DEG + HOT_SPAN_DEG
+    span = (360.0 - top) / 3.0
     out = []
     for k in range(3):                                   # cylinder 1 outboard, 2 bottom, 3 inboard
         a = 90.0 + (k - 1) * span * sgn
         out.append((f"Cyl{k + 1}", math.radians(a), math.radians(span)))
-    out.append(("Aux", math.radians(-90.0), math.radians(AUX_SPAN_DEG)))
+    out.append(("Aux", math.radians(-90.0 + sgn * (top - AUX_SPAN_DEG) / 2), math.radians(AUX_SPAN_DEG)))
+    out.append(("Hot", math.radians(-90.0 - sgn * (top - HOT_SPAN_DEG) / 2), math.radians(HOT_SPAN_DEG)))
     return out
+
+
+def ported_liner_arc(m, fr, r_in, r_out, stations, port_bands, mat):
+    """Sleeve with port rings on part of the circumference only. port_bands: {band index: centre angle of the ported
+    arc in the frame (pi/2 = straight down, -pi/2 = straight up)}. N_PORTS ports in PORT_ARC_DEG, 3 cells open + 1 bridge."""
+    n_arc = N_PORTS * 4
+    N = int(round(n_arc * 360.0 / PORT_ARC_DEG))
+    seg = 2 * math.pi / N
+    O = [m.add_verts([fr.Pc(r_out, i * seg, z) for i in range(N)]) for z in stations]
+    I = [m.add_verts([fr.Pc(r_in, i * seg, z) for i in range(N)]) for z in stations]
+
+    def is_port(j, i):
+        if j not in port_bands:
+            return False
+        k = (i - int(round(port_bands[j] / seg)) + n_arc // 2) % N      # cell index counted from the start of the arc
+        return k < n_arc and (k % 4) != 3 and k != n_arc - 1
+
+    for j in range(len(stations) - 1):
+        for i in range(N):
+            i1 = (i + 1) % N
+            V = m.v
+            if not is_port(j, i):
+                m.poly([V[O[j] + i], V[O[j] + i1], V[O[j + 1] + i1], V[O[j + 1] + i]], mat)
+                m.poly([V[I[j + 1] + i], V[I[j + 1] + i1], V[I[j] + i1], V[I[j] + i]], mat)
+                continue
+            m.poly([V[O[j] + i], V[O[j] + i1], V[I[j] + i1], V[I[j] + i]], mat)
+            m.poly([V[I[j + 1] + i], V[I[j + 1] + i1], V[O[j + 1] + i1], V[O[j + 1] + i]], mat)
+            if not is_port(j, (i - 1) % N):
+                m.poly([V[O[j] + i], V[I[j] + i], V[I[j + 1] + i], V[O[j + 1] + i]], mat)
+            if not is_port(j, i1):
+                m.poly([V[O[j] + i1], V[O[j + 1] + i1], V[I[j + 1] + i1], V[I[j] + i1]], mat)
+    V = m.v
+    J = len(stations) - 1
+    for i in range(N):
+        i1 = (i + 1) % N
+        m.poly([V[I[0] + i], V[I[0] + i1], V[O[0] + i1], V[O[0] + i]], mat)
+        m.poly([V[O[J] + i], V[O[J] + i1], V[I[J] + i1], V[I[J] + i]], mat)
 
 
 def arc(m, fr, R, z, th0, th1, r, mat, n=24):
@@ -769,16 +902,20 @@ def build(preset=PRESET):
         # sleeve with port rings (intake on -X, exhaust on +X), open ends into the generator housings
         st = [-d["L_l"], -(cb + 0.002), -(cb - d["h_in"]), cb - d["h_ex"], cb + 0.002, d["L_l"]]
         o = new(f"OPF_{tag}_Sleeve", "OPFPLG_Core")
-        ported_liner(o.mesh, fr, d["r_li"], d["r_lo"], st, (1, 3), "Liner", N_PORTS, swirl_rings=(1, 2))
+        # intake ports on the upper arc (-X end), exhaust ports on the lower arc (+X end), same area and height as before
+        ported_liner_arc(o.mesh, fr, d["r_li"], d["r_lo"], st, {1: -math.pi / 2, 3: math.pi / 2}, "Liner")
         tube(o.mesh, fr, d["r_lo"], d["r_band"], -L_BAND, L_BAND, "Liner")     # printed combustion band
         for s in (-1, 1):                                # stationary propane seal packs
             a0, a1 = sorted((s * d["u_seal"], s * (d["u_seal"] + 0.010)))
             tube(o.mesh, fr, d["r_lo"], d["r_lo"] + 0.004, a0, a1, "Housing_Flange")
 
-        o = new(f"OPF_{tag}_Intake_Belt", "OPFPLG_Core")
-        tube(o.mesh, fr, d["r_lo"] + 0.0005, d["r_b"], -(cb + 0.008), -(cb - d["h_in"] - 0.006), "Intake_Belt")
-        o = new(f"OPF_{tag}_Exhaust_Belt", "OPFPLG_Core")
-        tube(o.mesh, fr, d["r_lo"] + 0.0005, d["r_b"], cb - d["h_ex"] - 0.006, cb + 0.008, "Exhaust_Belt")
+        # thick printed sleeve where the bore crosses each chest (carries the cooling gallery to the port bridges)
+        o = new(f"OPF_{tag}_Chest_Sleeves", "OPFPLG_Core")
+        tube(o.mesh, fr, d["r_lo"], d["r_sl"], -(cb - d["h_in"] - 0.002), -d["xi0"], "Liner")
+        tube(o.mesh, fr, d["r_lo"], d["r_sl"], d["xe0"], d["xe0"] + 0.008, "Liner")
+        # exhaust-port insert: a printed steel sleeve carrying the exhaust ports and their bridges, fitted over the bore
+        # wall where it crosses the exhaust chest; the propane gallery runs behind it
+        tube(o.mesh, fr, d["r_lo"], d["r_sl"], d["xe0"] + 0.008, cb - d["h_ex"] - 0.002, "Port_Insert")
 
         # propane cooling gallery printed in the bore wall, right through the combustion zone; one half per
         # piston circuit, split at the centre plane. Ring manifolds at the centre (inlet) and by the ports (outlet)
@@ -809,10 +946,21 @@ def build(preset=PRESET):
             o = new(f"OPF_{tag}_Piston_{side}", "OPFPLG_Generator", origin=C,
                     motion=(s, phi), travel=(s * stroke, 0, 0))
             g, Lp = d["g"], d["Lp"]
-            z0, z1 = zz(g, g + 0.022)
-            cyl(o.mesh, fr, d["r_li"] - 0.0005, z0, z1, "Piston")                    # crown
-            z0, z1 = zz(g + 0.022, g + Lp)
-            tube(o.mesh, fr, d["r_li"] - 0.0045, d["r_li"] - 0.0005, z0, z1, "Piston")   # long skirt
+            na, rl = d["na"], d["r_li"]
+            u1, u2 = g + NA_T_PLATE, g + NA_T_PLATE + NA_H_GAL
+            u3, u4 = u2 + NA_T_BACK, u2 + NA_T_BACK + NA_L_JACKET
+            z0, z1 = zz(g, u1)
+            cyl(o.mesh, fr, rl - 0.0005, z0, z1, "Piston")                           # steel gas plate
+            z0, z1 = zz(u1, u1 + NA_FILL * NA_H_GAL)
+            cyl(o.mesh, fr, rl - 0.004, z0, z1, "Sodium")                            # sodium gallery (half full)
+            z0, z1 = zz(u2, u3)
+            cyl(o.mesh, fr, rl - 0.0005, z0, z1, "Piston")                           # back plate
+            z0, z1 = zz(u3, u3 + NA_FILL * NA_L_JACKET)
+            tube(o.mesh, fr, na["r_j0"], na["r_j1"], z0, z1, "Sodium")               # sodium in the skirt jacket
+            z0, z1 = zz(u3, u4)
+            tube(o.mesh, fr, na["r_j0"] - NA_T_WALL, na["r_j0"], z0, z1, "Piston")   # jacket inner wall (finned, propane side)
+            z0, z1 = zz(u1, g + Lp)
+            tube(o.mesh, fr, rl - 0.0005 - T_SKIRT, rl - 0.0005, z0, z1, "Piston")   # printed titanium skirt
             for k in range(3):                         # ring lands
                 u = g + 0.007 + 0.005 * k
                 a0, a1 = zz(u, u + 0.002)
@@ -853,10 +1001,6 @@ def build(preset=PRESET):
             o = new(f"OPF_{tag}_Spray_Lance_{side}", "OPFPLG_Cooling")
             z0, z1 = zz(d["g"] + d["Lp"] + 0.055, d["END"] - d["t_cap"])
             tube(o.mesh, fr, 0.006, 0.009, z0, z1, "Propane_Liquid", n=16)      # up the hollow tail to the crown
-            ju = cb - (d["h_ex"] if s > 0 else d["h_in"]) - 0.030                # jacket half -> housing jumper
-            th_j = math.radians(135)
-            pipe(o.mesh, [fr.Pc(d["r_lo"] + 0.010, th_j, s * ju), fr.Pc(d["r_b"] + 0.010, th_j, s * ju),
-                          fr.Pc(d["r_b"] + 0.010, th_j, s * (d["h0"] + 0.004))], 0.005, "Propane_Liquid", bend=0.012)
 
             o = new(f"OPF_{tag}_Bleed_Valve_{side}", "OPFPLG_Cooling")
             nv = (0.0, n45, n45)                                                # up and aft, into the valley
@@ -890,7 +1034,7 @@ def build(preset=PRESET):
                           pfr.Pc(R_OUT, th_c + dth, zlip), (xt, 1.47, zl), (xt, pl1[1] + 0.03, zl),
                           (xt, pl1[1], pl1[2]), pl1], 0.006, "Propane_Liquid", bend=0.04, n=10)
 
-    # ---- ONE metal-printed centre block: three bores, port galleries, cooling galleries, two bolt faces
+    # ---- ONE metal-printed centre block: waist round the combustion zones, a chest at each end
     ys3 = d["cyl_y"]
     hp_y = d["pitch"] / 2
 
@@ -916,24 +1060,131 @@ def build(preset=PRESET):
                 if not (fa and fb):                                    # outer wall (not the plane shared by two cells)
                     m_.poly([(xa, ya, za), (xb, ya, za), (xb, yb, zb), (xa, yb, zb)], mat)
 
-    xf, tf_ = d["blk_face"], d["blk_tf"]
-    o = new("OPF_Block_Body", "OPFPLG_Block")
-    slab(o.mesh, -(xf - tf_), xf - tf_, d["Rb"], d["r_lo"], "Block_Body")
-    for s, side in ((-1, "Intake"), (1, "Exhaust")):
-        o = new(f"OPF_Block_Bolt_Face_{side}", "OPFPLG_Block")
-        slab(o.mesh, s * (xf - tf_), s * xf, d["flange_r"], d["r_lo"], "Printed_Block")
+    def track(R, n=20):
+        """Racetrack outline (y, z) of radius R round the three axes, closed loop."""
+        pts = [(ys3[0] + R * math.cos(math.pi / 2 + math.pi * k / n), zc + R * math.sin(math.pi / 2 + math.pi * k / n)) for k in range(n + 1)]
+        pts += [(ys3[2] + R * math.cos(-math.pi / 2 + math.pi * k / n), zc + R * math.sin(-math.pi / 2 + math.pi * k / n)) for k in range(n + 1)]
+        return pts
+
+    def shell(m_, xa, xb, Ro, Ri, mat):
+        """Hollow racetrack wall between x = xa and xb: outer surface Ro, inner surface Ri, end rings."""
+        po, pi_ = track(Ro), track(Ri)
+        n_ = len(po)
+        for i in range(n_):
+            j = (i + 1) % n_
+            for P_ in (po, pi_):
+                m_.poly([(xa, *P_[i]), (xb, *P_[i]), (xb, *P_[j]), (xa, *P_[j])], mat)
+            for x in (xa, xb):
+                m_.poly([(x, *po[i]), (x, *po[j]), (x, *pi_[j]), (x, *pi_[i])], mat)
+
+    def in_track(y, z, R):
+        if ys3[0] <= y <= ys3[2]:
+            return abs(z - zc) < R
+        return min(math.hypot(y - ys3[0], z - zc), math.hypot(y - ys3[2], z - zc)) < R
+
+    xf, Rch, Rf = d["blk_face"], d["R_ch"], d["flange_r"]
+    o = new("OPF_Block_Waist", "OPFPLG_Block")
+    slab(o.mesh, -d["xi0"], d["xe0"], d["Rb"], d["r_lo"], "Block_Body")
+    chests = (("Intake", -1, d["xi0"], "Intake_Gas"), ("Exhaust", 1, d["xe0"], "Exhaust_Gas"))
+    for side, s, x0, gas in chests:
+        xa, xb = sorted((s * x0, s * xf))
+        xw = s * (x0 + 0.008)                                          # inboard end wall thickness 8 mm
+        o = new(f"OPF_Block_{side}_Chest", "OPFPLG_Block")
+        slab(o.mesh, *sorted((s * x0, xw)), Rf, d["r_sl"], "Printed_Block")   # inboard end wall (part of the block)
+        if side == "Intake":
+            shell(o.mesh, xa, xb, Rf, Rch, "Printed_Block")             # chest wall, bolt circle in its face
+        else:
+            # exhaust housing: its underside is OPEN between the end wall and the closing wall, so the manifold
+            # can come right up under the bores. Wall kept only above the flange level.
+            z_fl = zc - EX_FLANGE_D
+            po_, pi_ = track(Rf), track(Rch)
+            for i_ in range(len(po_)):
+                j_ = (i_ + 1) % len(po_)
+                if min(po_[i_][1], po_[j_][1]) < z_fl - 1e-6:
+                    continue
+                for P_ in (po_, pi_):
+                    o.mesh.poly([(xa, *P_[i_]), (xb, *P_[i_]), (xb, *P_[j_]), (xa, *P_[j_])], "Printed_Block")
+                for x_ in (xa, xb):
+                    o.mesh.poly([(x_, *po_[i_]), (x_, *po_[j_]), (x_, *pi_[j_]), (x_, *pi_[i_])], "Printed_Block")
+        if side == "Exhaust":
+            # The exhaust never touches the stator assemblies: the block has a closing wall on this face, and the gas
+            # is collected by a stainless PORT BELT round each bore (air gap all round it inside the block), which
+            # drops through the block's underside into a separate bolt-on manifold.
+            slab(o.mesh, xf - 0.005, xf, Rf, d["r_sl"], "Printed_Block")        # closing wall toward the stator housings
+            xb0, xb1 = xw + 0.006, xf - 0.006                                   # the collector covers the whole port band
+            d["ex_belt"] = dict(x0=xb0, x1=xb1, R=EX_BELT_R)
+            D_fl, yw_ = EX_FLANGE_D, EX_THROAT_Y / 2                            # flange face just under the port insert
+            xt1 = EX_THROAT_X1
+
+            def collector(m_, yk, xa_, xb_, r_in, R_, yw, D_, mat, walls=True, n_=72):
+                """Collector under one bore: round the ported lower arc, straight down through a wide throat to the
+                flange opening at depth D_. Outline taken as a ray from the bore axis (frame angle pi/2 = down)."""
+                half = math.radians(PORT_ARC_DEG) / 2 + math.radians(6.0)
+                ang = [math.pi / 2 - half + 2 * half * i / n_ for i in range(n_ + 1)]
+                def rho(th):
+                    dn, sd = math.sin(th), abs(math.cos(th))                    # down component, sideways component
+                    if dn > 1e-6 and D_ / dn * sd <= yw:
+                        return D_ / dn, True                                    # the open flange face
+                    if dn > 1e-6 and sd > 1e-6 and yw / sd * dn >= math.sqrt(max(R_ * R_ - yw * yw, 0.0)):
+                        return yw / sd, False                                   # throat side wall
+                    return R_, False
+                bf_ = Frame((0.0, yk, zc), (1, 0, 0))
+                P_ = [(rho(t)[0], rho(t)[1], t) for t in ang]
+                for i in range(n_):
+                    (r0, o0, t0), (r1, o1, t1) = P_[i], P_[i + 1]
+                    for x_ in (xa_, xb_):                                       # end plates
+                        m_.poly([bf_.Pc(r_in, t0, x_), bf_.Pc(r0, t0, x_), bf_.Pc(r1, t1, x_), bf_.Pc(r_in, t1, x_)], mat)
+                    if walls and not (o0 and o1):                               # outer wall (the flange face stays open)
+                        m_.poly([bf_.Pc(r0, t0, xa_), bf_.Pc(r0, t0, xb_), bf_.Pc(r1, t1, xb_), bf_.Pc(r1, t1, xa_)], mat)
+                if walls:
+                    for t_, r_ in ((ang[0], P_[0][0]), (ang[-1], P_[-1][0])):     # closed ends of the arc, above the top ports
+                        m_.poly([bf_.Pc(r_in, t_, xa_), bf_.Pc(r_in, t_, xb_), bf_.Pc(r_, t_, xb_), bf_.Pc(r_, t_, xa_)], mat)
+
+            o = new("OPF_Exhaust_Collectors", "OPFPLG_Air")
+            xm_ = 0.5 * (xb0 + xt1)
+            for yk in ys3:
+                collector(o.mesh, yk, xb0, xb1, d["r_sl"], EX_BELT_R, yw_, D_fl, "Exhaust_Liner")
+                obox(o.mesh, (0.5 * (xt1 + xb1), yk, z_fl + 0.0015), X3, (0.5 * (xb1 - xt1), yw_, 0.0015), "Exhaust_Liner")   # lip that turns the outboard ports in
+                for sy_ in (-1, 1):                                             # flange rails along the opening, bolted to the manifold
+                    obox(o.mesh, (xm_, yk + sy_ * (yw_ + 0.008), z_fl + 0.003), X3, ((xt1 - xb0) / 2 + 0.010, 0.008, 0.003), "Exhaust_Liner")
+                for sx_ in (-1, 1):
+                    obox(o.mesh, (xm_ + sx_ * ((xt1 - xb0) / 2 + 0.005), yk, z_fl + 0.003), X3, (0.005, yw_, 0.003), "Exhaust_Liner")
+                for sy_ in (-1, 1):
+                    for kx_ in range(3):
+                        xb_ = xb0 + 0.006 + (xt1 - xb0 - 0.012) * kx_ / 2
+                        pipe(o.mesh, [(xb_, yk + sy_ * (yw_ + 0.008), z_fl + 0.010), (xb_, yk + sy_ * (yw_ + 0.008), z_fl - 0.010)], 0.004, "Bolt", n=6)
+            d["ex_flange_z"] = z_fl
+            d["ex_neck_y"] = list(ys3)
+            d["ex_throat"] = (xt1 - xb0, EX_THROAT_Y)
+            d["ex_throat_x"] = (xb0, xt1)
+        o = new(f"OPF_{side}_Chest_Gas", "OPFPLG_Air")
+        if side == "Intake":
+            slab(o.mesh, *sorted((xw, s * xf)), Rch - 0.003, d["r_sl"], gas)
+        else:
+            for yk in ys3:
+                collector(o.mesh, yk, d["ex_belt"]["x0"] + 0.002, d["ex_belt"]["x1"] - 0.002, d["r_sl"] + 0.001, EX_BELT_R - 0.003,
+                          yw_ - 0.003, D_fl, gas, walls=False)
+        # bolts: tapped into the chest wall; where a bolt falls inside the chest it runs in a printed boss
         o = new(f"OPF_Block_Bolts_{side}", "OPFPLG_Block")
+        ob = new(f"OPF_Block_Bosses_{side}", "OPFPLG_Block")
         for yk in ys3:
             bf = Frame((0.0, yk, zc), (1, 0, 0))
             for i in range(16):
-                p0 = bf.Pc(d["r_bolt"], 2 * math.pi * (i + 0.5) / 16, s * (xf - tf_ - 0.004))
-                p1 = bf.Pc(d["r_bolt"], 2 * math.pi * (i + 0.5) / 16, s * (d["h0"] + 0.007))
-                pipe(o.mesh, [p0, p1], 0.0045, "Bolt", n=6)
-    by0, by1 = ys3[0] - d["Rb"], ys3[2] + d["Rb"]
-    o = new("OPF_Block_Mounts", "OPFPLG_Block")
-    for s in (-1, 1):
-        for y in (by0 + 0.06, by1 - 0.06):
-            obox(o.mesh, (s * (xf - tf_ - 0.035), y, zc - d["Rb"] - 0.012), X3, (0.030, 0.035, 0.014), "Printed_Block")
+                th = 2 * math.pi * (i + 0.5) / 16
+                p_ = bf.Pc(d["r_bolt"], th, 0.0)
+                if side == "Exhaust" and p_[2] < zc - EX_FLANGE_D:
+                    # the lowest bolts sit beside the manifold: shorter, in bosses on the closing wall
+                    pipe(o.mesh, [bf.Pc(d["r_bolt"], th, xf - 0.012), bf.Pc(d["r_bolt"], th, d["h0"] + 0.007)], 0.0045, "Bolt", n=6)
+                    pipe(ob.mesh, [bf.Pc(d["r_bolt"], th, xf - 0.019), bf.Pc(d["r_bolt"], th, xf)], 0.0075, "Printed_Block", n=8)
+                    continue
+                pipe(o.mesh, [bf.Pc(d["r_bolt"], th, s * (xf - 0.016)), bf.Pc(d["r_bolt"], th, s * (d["h0"] + 0.007))],
+                     0.0045, "Bolt", n=6)
+                if in_track(p_[1], p_[2], Rch):
+                    pipe(ob.mesh, [bf.Pc(d["r_bolt"], th, xw), bf.Pc(d["r_bolt"], th, s * xf)], 0.0075, "Printed_Block", n=8)
+    o = new("OPF_Block_Mounts", "OPFPLG_Block")                         # four lugs under the waist, clear of the pack
+    for yk in (ys3[0], ys3[2]):
+        for s in (-1, 1):
+            obox(o.mesh, (s * 0.025, yk, zc - d["Rb"] - 0.015), X3, (0.015, 0.035, 0.016), "Printed_Block")
 
     # ---- electric turbo-compound unit: compressor | motor-generator | turbine (built at 1:1, then scaled radially)
     yT, zT, kT = d["y_T"], d["z_T"], TURBO_K
@@ -1002,8 +1253,9 @@ def build(preset=PRESET):
     tube(o.mesh, tf, 0.036, R0 + 0.003, 0.262, 0.266, "Turbine")
     lathe(o.mesh, tf, [(R0, 0.277)] + [(r + 0.002, z) for r, z in zip(t_rt, t_z)] +
           [(0.054, 0.350), (0.075, 0.40)], "Turbine", n=48, smooth_profile=True)
-    # exhaust comes down the front of the volute (same swirl as the rotation), exducer exits axially (+X)
-    t_port, _ = scroll(o.mesh, tf, 0.272, R0, 0.009, rbig, FRONT, "Turbine", "turbine")
+    # exhaust enters at the bottom of the volute heading aft (same swirl as the rotation), exducer exits axially (+X)
+    BOTTOM = math.pi / 2
+    t_port, _ = scroll(o.mesh, tf, 0.272, R0, 0.009, rbig, BOTTOM, "Turbine", "turbine")
     o = tnew("OPF_ETurbo_VGT_Actuator")
     obox(o.mesh, (0.30, yT + 0.11, zT + 0.135), X3, (0.025, 0.030, 0.012), "VGT_Actuator")
 
@@ -1014,55 +1266,192 @@ def build(preset=PRESET):
     c_port, t_port = tscale(c_port), tscale(t_port)
     d["c_port"], d["t_port"] = c_port, t_port
     rca = d["r_ca"]
-    y_lane = t_port[1]
 
-    # ---- gas path: compressor -> charge air cooler (spine) -> intake plenum; collector -> turbine
+    # ---- gas path: compressor -> centre-fed charge air cooler -> two downcomers -> air chest;
+    #      exhaust chest -> rear outlet -> bottom inlet of the turbine volute
     cac = d["cac"]
-    y_first, y_last = d["cyl_y"][0], d["cyl_y"][2]
-    pyf, pya = y_first - 0.07, y_last + 0.07
-    pxc, pw = 0.5 * (d["px_in"] + d["px_out"]), d["pl_w"] / 2
-    zb, zt = d["pz_bot"], d["pz_top"]
-    o = new("OPF_Intake_Manifold", "OPFPLG_Air")
-    obox(o.mesh, (-pxc, (pyf + pya) / 2, (zb + zt) / 2), X3, (pw, (pya - pyf) / 2, (zt - zb) / 2), "Intake_Pipe")
-    # downcomer from the cooler's front tank into the plenum
-    obox(o.mesh, (-pxc, (cac["yf"] + cac["y0"]) / 2, (zt + cac["z0"]) / 2), X3,
-         (pw, (cac["y0"] - cac["yf"]) / 2, (cac["z0"] - zt) / 2), "Intake_Pipe")
-    o = new("OPF_Charge_Air_Pipe", "OPFPLG_Air")
-    xc_in = -0.075
-    pipe(o.mesh, [c_port, (c_port[0], y_lane, c_port[2] + 0.003), (-0.115, y_lane, c_port[2] + 0.035),
-                  (xc_in, y_lane, 0.860), (xc_in, y_lane, cac["z0"] + 0.005)], rca, "Intake_Hot", bend=0.06)
-
-    o = new("OPF_Charge_Air_Cooler", "OPFPLG_Air")
+    dk = d["deck"]
+    y_last = d["cyl_y"][2]
     hw = cac["hw"]
     zm, zh = (cac["z0"] + cac["z1"]) / 2, (cac["z1"] - cac["z0"]) / 2
-    obox(o.mesh, (0, (cac["y0"] + cac["y1"]) / 2, zm), X3, (hw - 0.012, (cac["y1"] - cac["y0"]) / 2, zh - 0.004),
-         "CAC_Core")
-    nf = 30                                               # plate edges, so the core reads as a bar-and-plate block
-    for k in range(nf + 1):
-        y = cac["y0"] + (cac["y1"] - cac["y0"]) * k / nf
-        obox(o.mesh, (0, y, zm), X3, (hw - 0.010, 0.0012, zh - 0.002), "CAC_Fin")
-    obox(o.mesh, (0, (cac["yf"] + cac["y0"]) / 2, zm), X3, (hw, (cac["y0"] - cac["yf"]) / 2, zh), "Intake_Pipe")   # cold tank
-    obox(o.mesh, (0, (cac["y1"] + cac["ya"]) / 2, zm), X3, (hw, (cac["ya"] - cac["y1"]) / 2, zh), "Intake_Hot")    # hot tank
+    z_top = zc + d["flange_r"]                                         # top of the chests
+    d["routes"] = []
+
+    def route(name, pts, r):
+        d["routes"].append((name, [tuple(p) for p in pts], r))
+
+    def ybox(m_, x0_, x1_, secs, mat):
+        """Box along y with a varying section: secs = [(y, z_bottom, z_top), ...]."""
+        for (ya_, za0, za1), (yb_, zb0, zb1) in zip(secs, secs[1:]):
+            for x_ in (x0_, x1_):
+                m_.poly([(x_, ya_, za0), (x_, yb_, zb0), (x_, yb_, zb1), (x_, ya_, za1)], mat)
+            m_.poly([(x0_, ya_, za1), (x1_, ya_, za1), (x1_, yb_, zb1), (x0_, yb_, zb1)], mat)
+            m_.poly([(x0_, ya_, za0), (x0_, yb_, zb0), (x1_, yb_, zb0), (x1_, ya_, za0)], mat)
+        for (y_, z0_, z1_) in (secs[0], secs[-1]):
+            m_.poly([(x0_, y_, z0_), (x1_, y_, z0_), (x1_, y_, z1_), (x0_, y_, z1_)], mat)
+
+    def xloft(m_, secs, mat):
+        """Solid with an x-z outline (same point count in every section) lofted along y; convex outlines only."""
+        for (ya_, pa), (yb_, pb) in zip(secs, secs[1:]):
+            n_ = len(pa)
+            for i in range(n_):
+                j = (i + 1) % n_
+                m_.poly([(pa[i][0], ya_, pa[i][1]), (pa[j][0], ya_, pa[j][1]), (pb[j][0], yb_, pb[j][1]), (pb[i][0], yb_, pb[i][1])], mat)
+        m_.poly([(x_, secs[0][0], z_) for x_, z_ in secs[0][1]][::-1], mat)
+        m_.poly([(x_, secs[-1][0], z_) for x_, z_ in secs[-1][1]], mat)
+
+    def tank(x0_, x1_, zb_, zt_o, r_=0.020, grow=0.0):
+        """Tank outline: flat bottom, rounded top corners."""
+        r_ = max(0.004, min(r_, 0.6 * (zt_o - zb_)))
+        pts = [(x0_ - grow, zb_), (x1_ + grow, zb_)]
+        for k in range(5):
+            a_ = math.pi / 2 * k / 4
+            pts.append((x1_ + grow - r_ + r_ * math.cos(a_), zt_o + grow - r_ + r_ * math.sin(a_)))
+        for k in range(5):
+            a_ = math.pi / 2 * (1 + k / 4)
+            pts.append((x0_ - grow + r_ + r_ * math.cos(a_), zt_o + grow - r_ + r_ * math.sin(a_)))
+        return pts
+
+    o = new("OPF_Charge_Air_Cooler", "OPFPLG_Air")
+    # Cross-section: a narrow cold plenum (neck) on the air-chest side of the block, flaring out under a wide core and
+    # hot tank. The wide part sits well above the exhaust chest; a formed double-skin shield follows the underside.
+    xc, xa, xb, xn = cac["xc"], cac["x0"], cac["x1"], cac["xn"]
+    cac_x = lambda sgn: xb if sgn > 0 else xa                             # the cooler's side on +x / -x
+    ya_c, yb_c = cac["y0"], cac["y1"]
+    ym_c, hy_c = (ya_c + yb_c) / 2, (yb_c - ya_c) / 2
+    zk = cac["zk"]
+    obox(o.mesh, ((xa + xn) / 2, ym_c, (cac["zp0"] + zk) / 2), X3, ((xn - xa) / 2, hy_c, (zk - cac["zp0"]) / 2), "Intake_Pipe")
+    flare = [(xa, zk), (xn, zk), (xb, cac["z0"] - 0.006), (xb, cac["z0"]), (xa, cac["z0"])]
+    xloft(o.mesh, [(ya_c, flare), (yb_c, flare)], "Intake_Pipe")
+    # clearance to the exhaust chest top (from its inboard top edge to the neck wall and to the flared underside)
+    def seg_dist(p_, a_, b_):
+        vx, vz = b_[0] - a_[0], b_[1] - a_[1]
+        t_ = max(0.0, min(1.0, ((p_[0] - a_[0]) * vx + (p_[1] - a_[1]) * vz) / (vx * vx + vz * vz)))
+        return math.hypot(p_[0] - a_[0] - t_ * vx, p_[1] - a_[1] - t_ * vz)
+    z_blk = cac["zp0"] - 0.001                                          # block / chest top
+    edge = (d["xe0"], z_blk)                                          # top of the block over the exhaust belts
+    d["cac_ex_gap"] = min(edge[0] - xn, seg_dist(edge, flare[1], flare[2]), cac["z0"] - 0.006 - z_blk)
+    # heat shield: two thin skins 4 mm apart, standing 10 mm off the cooler, up the neck and out under the flare,
+    # with a short turned-up edge at the core's side; open at both ends so air draws through
+    sh = [(xn + 0.010, cac["zp0"] + 0.004), (xn + 0.010, zk - 0.007), (xb + 0.008, cac["z0"] - 0.018), (xb + 0.014, cac["z0"] - 0.004)]
+    d["cac_shield_gap"] = seg_dist(edge, (sh[1][0] + 0.003, sh[1][1] - 0.003), (sh[2][0] + 0.003, sh[2][1] - 0.003))
+    for off in (0.0, 0.003):
+        pts_s = [(x_ + off, z_ - off) for x_, z_ in sh]
+        for (x1s, z1s), (x2s, z2s) in zip(pts_s, pts_s[1:]):
+            o.mesh.poly([(x1s, ya_c - 0.010, z1s), (x2s, ya_c - 0.010, z2s), (x2s, yb_c + 0.010, z2s), (x1s, yb_c + 0.010, z1s)], "Heat_Shield")
+    for k in range(6):                                                    # stand-off brackets
+        y_ = ya_c + 0.06 + (yb_c - ya_c - 0.12) * k / 5
+        obox(o.mesh, (xn + 0.005, y_, zk - 0.014), X3, (0.005, 0.006, 0.004), "Bolt")
+        obox(o.mesh, (0.5 * (xn + xb) + 0.004, y_, 0.5 * (zk + cac["z0"]) - 0.008), X3, (0.006, 0.006, 0.005), "Bolt")
+    # core: vertical plates (air runs down between them, propane runs fore and aft inside them), framed by a flange
+    # top and bottom where the tanks bolt on
+    zm, zh = (cac["z0"] + cac["z1"]) / 2, (cac["z1"] - cac["z0"]) / 2
+    obox(o.mesh, (xc, ym_c, zm), X3, (hw - 0.006, hy_c - 0.004, zh), "CAC_Core")
+    obox(o.mesh, (xc, ym_c, zm), X3, (hw + 0.003, hy_c + 0.003, 0.002), "Hot_Aux_Vapour")      # divider between the hot stage (top) and the cold stage
+    n_pl = max(17, int(round((2 * hw - 0.020) / 0.0125)) + 1)
+    for k in range(n_pl):
+        x_ = xa + 0.010 + (2 * hw - 0.020) * k / (n_pl - 1)
+        obox(o.mesh, (x_, ym_c, zm), X3, (0.0012, hy_c - 0.002, zh + 0.002), "CAC_Fin")
+    for z_ in (cac["z0"], cac["z1"]):
+        for sy in (-1, 1):
+            obox(o.mesh, (xc, ym_c + sy * (hy_c + 0.002), z_), X3, (hw + 0.006, 0.004, 0.003), "Intake_Pipe")
+        for sx in (-1, 1):
+            obox(o.mesh, (xc + sx * (hw + 0.002), ym_c, z_), X3, (0.004, hy_c + 0.006, 0.003), "Intake_Pipe")
+    # hot tank: rounded top that follows the skin 22 mm under it, so it is shallow at the front (little flow left)
+    # and deep at the rear bay where the riser comes in; ribbed across
+    def hp_top(y_):
+        return min(body_ztop(0.0, y_), body_ztop(abs(xa), y_), body_ztop(abs(xb), y_), body_ztop(abs(cac["xr0"]), y_)) - 0.022
+    ys_hp = [ya_c + (yb_c - ya_c) * k / 10 for k in range(11)]
+    secs = [(y_, cac["z1"], hp_top(y_)) for y_ in ys_hp] + [(yb_c + 0.002, cac["zr0"], hp_top(yb_c)),
+                                                            (cac["ya"], cac["zr0"], hp_top(cac["ya"]))]
+    cac["zh_r"] = max(t for _, _, t in secs)
+    cac["hp_secs"] = secs
+    xloft(o.mesh, [(y_, tank(xa, xb, zb_, zt_o)) for y_, zb_, zt_o in secs[:11]], "Intake_Hot")
+    xloft(o.mesh, [(y_, tank(cac["xr0"], cac["xr1"], cac["zr0"], hp_top(y_))) for y_ in (yb_c, cac["ya"] - 0.012)]
+          + [(cac["ya"], tank(cac["xr0"] + 0.010, cac["xr1"] - 0.010, cac["zr0"] + 0.008, hp_top(cac["ya"]) - 0.010, r_=0.012))], "Intake_Hot")
+    for k in range(1, 8):                                                 # ribs across the hot tank
+        y_ = ya_c + (yb_c - ya_c) * k / 8
+        xloft(o.mesh, [(y_ - 0.003, tank(xa, xb, cac["z1"], hp_top(y_ - 0.003), grow=0.003)),
+                       (y_ + 0.003, tank(xa, xb, cac["z1"], hp_top(y_ + 0.003), grow=0.003))], "Intake_Pipe")
     o = new("OPF_CAC_Propane_Headers", "OPFPLG_Cooling")
     for sgn in (-1, 1):
-        pipe(o.mesh, [(sgn * (hw - 0.004), cac["y0"] - 0.01, cac["z0"] + 0.004), (sgn * (hw - 0.004), cac["y1"], cac["z0"] + 0.004)],
-             0.010, "Aux_Liquid", n=10)
-        pipe(o.mesh, [(sgn * (hw - 0.020), cac["y0"], cac["z1"] + 0.004), (sgn * (hw - 0.020), cac["y1"] + 0.01, cac["z1"] + 0.004)],
-             0.015, "Aux_Vapour", n=10)
+        xh_ = cac_x(sgn) - sgn * 0.004
+        for z_, r_, mat_ in ((cac["z0"] + 0.006, 0.007, "Aux_Liquid"), (zm - 0.011, 0.009, "Aux_Vapour"),
+                             (zm + 0.009, 0.006, "Hot_Aux_Liquid"), (cac["z1"] - 0.010, 0.009, "Hot_Aux_Vapour")):
+            pipe(o.mesh, [(xh_, cac["y0"] + 0.005, z_), (xh_, cac["y1"] - 0.005, z_)], r_, mat_, n=10)
+    d["cac_floor_open"] = (xa, -d["xi0"])                             # floor opening over the air chest (x range)
 
-    o = new("OPF_Exhaust_Collector", "OPFPLG_Air")
-    dk = d["deck"]
-    y_step = dk["y1"] + 0.035
-    obox(o.mesh, (pxc, (pyf + y_step) / 2, (zb + zt) / 2), X3, (pw, (y_step - pyf) / 2, (zt - zb) / 2), "Exhaust_Pipe")
-    y_ce = y_lane - 0.055
-    obox(o.mesh, (pxc, (y_step + y_ce) / 2, (zb + d["col_top"]) / 2), X3,
-         (pw, (y_ce - y_step) / 2, (d["col_top"] - zb) / 2), "Exhaust_Pipe")
-    zcol = (zb + d["col_top"]) / 2
-    pipe(o.mesh, [(pxc, y_ce - 0.02, zcol), (pxc + 0.004, y_lane, zcol - 0.035), (0.200, y_lane, t_port[2] + 0.075),
-                  (t_port[0], y_lane, t_port[2] + 0.040), t_port], rca, "Exhaust_Pipe", bend=0.06)
-    o = new("OPF_CAC_Heat_Shield", "OPFPLG_Air")
-    obox(o.mesh, (0.075, (cac["yf"] + cac["ya"]) / 2, (d["col_top"] + cac["z0"]) / 2), X3,
-         (0.078, (cac["ya"] - cac["yf"]) / 2, 0.0015), "Heat_Shield")
+    # charge riser: compressor outlet (top of the volute, heading forward) -> up behind the block -> into the
+    # hot plenum's rear bay from below
+    o = new("OPF_Charge_Air_Pipe", "OPFPLG_Air")
+    # inboard low (under the wing root, between the compressor, the intake housing and the motor case), then up
+    pts = [c_port, (c_port[0], 1.300, c_port[2] + 0.004), (-0.150, 1.282, 0.825), (-0.070, 1.294, 0.835),
+           (-0.022, 1.275, 0.885), (-0.020, 1.262, cac["zr0"] + 0.010)]
+    pipe(o.mesh, pts, rca, "Intake_Hot", bend=0.05)
+    route("charge riser", pts, rca)
+
+    # exhaust outlet: through the rear end wall of the exhaust chest, down and aft to the turbine inlet
+    # exhaust: three belt necks -> bolt-on manifold under the block -> bottom of the turbine volute
+    d["r_out"] = 0.065
+    # separate exhaust manifold: a flat stainless log bolted under the three belt necks, growing as each cylinder
+    # joins, then round into the bottom of the turbine volute. It hangs under the block, clear of the stators.
+    def rrect(xc_, zt_o, w_, h_, n_=4, r_=None):
+        r_ = min(r_, 0.4999 * min(w_, h_)) if r_ else (min(w_, h_) / 2 * 0.999 if abs(w_ - h_) < 1e-6 else min(0.022, 0.45 * min(w_, h_)))
+        out_ = []
+        for cx_, cz_, a0_ in ((xc_ + w_ / 2 - r_, zt_o - r_, 0.0), (xc_ - w_ / 2 + r_, zt_o - r_, math.pi / 2),
+                              (xc_ - w_ / 2 + r_, zt_o - h_ + r_, math.pi), (xc_ + w_ / 2 - r_, zt_o - h_ + r_, 1.5 * math.pi)):
+            out_ += [(cx_ + r_ * math.cos(a0_ + math.pi / 2 * k / n_), cz_ + r_ * math.sin(a0_ + math.pi / 2 * k / n_)) for k in range(n_ + 1)]
+        return out_
+    xm_ = 0.5 * sum(d["ex_throat_x"])
+    z_mt = d["ex_flange_z"] - 0.006                                    # manifold top (under the flange frames)
+    y1m, y2m, y3m = d["cyl_y"]
+    yt_ = EX_THROAT_Y / 2
+    y_pk = ACC_Y0 + ACC_L                                              # rear end of the LTO pack
+    xo2 = xm_
+    wt_, ht_ = EX_MAN_TOP
+
+    def kh(xc_, zt_o, wt, ht, wb, hb, c_=0.010):
+        """Manifold outline (20 points, same order as rrect): an upper part wt x ht that sits up inside the block's open
+        underside, on a lower part wb x hb that can be wider because it hangs below the block."""
+        zs, zb = zt_o - ht, zt_o - ht - hb
+        c2 = min(c_, 0.45 * hb, 0.45 * wb)
+        xr, xl, xR, xL = xc_ + wt / 2, xc_ - wt / 2, xc_ + wb / 2, xc_ - wb / 2
+        return [(xR, zs), (xr, zs), (xr, zt_o - c_), (xr - c_, zt_o), (xc_ + 0.001, zt_o),
+                (xc_ - 0.001, zt_o), (xl + c_, zt_o), (xl, zt_o - c_), (xl, zs), (xL, zs),
+                (xL, zs - 0.001), (xL, zb + c2), (xL + c2, zb), (xc_ - 0.002, zb), (xc_ - 0.001, zb),
+                (xc_ + 0.001, zb), (xc_ + 0.002, zb), (xR - c2, zb), (xR, zb + c2), (xR, zs - 0.001)]
+    B_ = EX_MAN_BOT
+    # recessed in the block over the pack; a wider lower part appears as cylinder 2 feeds in, and grows behind the pack
+    msecs = [(y1m - yt_ - 0.016, kh(xo2, z_mt - 0.003, wt_ * 0.8, 0.045, wt_ * 0.8, 0.006)),
+             (y1m - yt_ - 0.006, kh(xo2, z_mt, wt_, ht_, *B_[0])), (y2m - yt_ - 0.006, kh(xo2, z_mt, wt_, ht_, *B_[0])),
+             (y_pk + 0.004, kh(xo2, z_mt, wt_, ht_, *B_[1])), (y_pk + 0.070, kh(xo2, z_mt, wt_, ht_, *B_[2])),
+             (y3m - yt_ - 0.006, kh(xo2, z_mt, wt_, ht_, *B_[2])), (y3m + yt_ + 0.006, kh(xo2, z_mt, wt_, ht_, *B_[3]))]
+    h1, h3 = ht_ + B_[0][1], ht_ + B_[3][1]
+    wp = B_[1][0]
+    # ... and carries on as ONE piece to the turbine: it turns round and rises once it is clear of the block's rear end
+    ro_ = d["r_out"]
+    y_be = y3m + d["flange_r"] + 0.006                                 # just behind the block and the cylinder 3 housing flange
+    tail = [(y_be, 0.5 * (xo2 + t_port[0]) - 0.030, z_mt, 0.150, 0.104, 0.040),
+            (0.5 * (y_be + t_port[1]) - 0.004, 0.5 * (xo2 + t_port[0]) + 0.022, 0.5 * (z_mt + t_port[2] + ro_), 0.136, 0.126, 0.058),
+            (t_port[1] - 0.022, t_port[0], t_port[2] + ro_, 2 * ro_, 2 * ro_, ro_), (t_port[1], t_port[0], t_port[2] + ro_, 2 * ro_, 2 * ro_, ro_)]
+    msecs += [(y_, rrect(x_, zt_o, w_, h_, r_=rc_)) for y_, x_, zt_o, w_, h_, rc_ in tail]
+    o = new("OPF_Exhaust_Manifold", "OPFPLG_Air")
+    xloft(o.mesh, msecs, "Exhaust_Pipe")
+    tx_ = d["ex_throat"][0] / 2
+    for yn_ in d["ex_neck_y"]:                                         # flange frame round each opening
+        for sy_ in (-1, 1):
+            obox(o.mesh, (xm_, yn_ + sy_ * (yt_ + 0.008), z_mt + 0.002), X3, (tx_ + 0.010, 0.008, 0.002), "Exhaust_Pipe")
+        for sx_ in (-1, 1):
+            obox(o.mesh, (xm_ + sx_ * (tx_ + 0.005), yn_, z_mt + 0.002), X3, (0.005, yt_, 0.002), "Exhaust_Pipe")
+    d["ex_man"] = dict(z_top=z_mt, z_bot=z_mt - h3, y0=y1m - yt_ - 0.016, y_pk=y_pk,
+                       pack_gap1=z_mt - h1 - ACC_TOP_BAY, pack_gap=z_mt - ht_ - B_[1][1] - ACC_TOP_BAY)
+    route("exhaust manifold over the pack", [(xo2, y1m - yt_, z_mt - 0.054), (xo2, y_pk + 0.004, z_mt - 0.054)], 0.054)
+    route("exhaust manifold behind the pack", [(xo2, y_pk + 0.100, z_mt - h3 / 2), (xo2, y3m + yt_, z_mt - h3 / 2)], h3 / 2)
+    # double radiant shield between the manifold and the LTO pack lid
+    for z_ in (0.006, 0.011):
+        obox(o.mesh, (xo2, 0.5 * (y1m - yt_ - 0.030 + y_pk), ACC_TOP_BAY + z_), X3,
+             (wp / 2 + 0.030, 0.5 * (y_pk - y1m + yt_ + 0.030), 0.0008), "Heat_Shield")
+    route("exhaust outlet", [(x_, y_, zt_o - h_ / 2) for y_, x_, zt_o, w_, h_, rc_ in tail], ro_)
 
     o = new("OPF_Fuel_Rail", "OPFPLG_Core")
     pipe(o.mesh, [(0.0, ENV["y"][0] + 0.01, rail_z), (0.0, y_last + 0.13, rail_z)], 0.008, "Fuel_Rail")
@@ -1078,63 +1467,65 @@ def build(preset=PRESET):
     pipe(o.mesh, [(xe0, yT, zT), (xe0 + 0.03, yT, zT), (xe0 + 0.08, yT, zT), (xe0 + 0.05, yT + 0.14, 0.45), p3, exit_],
          d["r_dp"], "Exhaust_Pipe", bend=0.12)
 
-    # ---- power-electronics deck ahead of the rear wing: 6 inverters, DC/DC, controller placeholder
-    zd = dk["z"]
-    o = new("OPF_Electronics_Deck", "OPFPLG_Electrical")
-    obox(o.mesh, (0, (dk["y0"] + dk["y1"]) / 2, zd), X3, (dk["hw"], (dk["y1"] - dk["y0"]) / 2, 0.002), "Deck")
+    # ---- power electronics: an inverter on top of each stator housing (the housing wall is its cold plate),
+    #      a 900 V bus along each side, DC/DC and controller beside the pack
     inv_hx, inv_hy, inv_h = 0.115, 0.058, 0.056
-    rows = [dk["y0"] + 0.068 + k * 0.135 for k in range(3)]
-    zi0 = zd + 0.002
-    inv_pos = {}
-    o_cp = new("OPF_Cold_Plates", "OPFPLG_Cooling")
+    x_inv = 0.295                                                      # inverter centre along the housing (x 0.18..0.41)
+    u_term = d["so_u1"] - 0.030                                        # stator AC terminal on the housing top
+    z_bus, x_bus = zc + d["flange_r"] + 0.011, 0.165                   # bus just above the block top, inboard of the inverters
+    d["boxes"] = []
+    o_sd = new("OPF_Inverter_Saddles", "OPFPLG_Cooling")
     o = new("OPF_Inverters", "OPFPLG_Electrical")
-    for ci, yr in enumerate(rows):
+    o_ac = new("OPF_AC_Leads", "OPFPLG_Electrical")
+    o_bus = new("OPF_DC_Bus", "OPFPLG_Electrical")
+    taps = {1: [], -1: []}
+    for ci, yc in enumerate(d["cyl_y"]):
+        th = math.radians(INV_TILT_DEG[ci])
+        nrm = (0.0, -math.sin(th), math.cos(th))                       # outward from the housing axis
+        tng = (0.0, math.cos(th), math.sin(th))
         for sgn in (-1, 1):
-            xc = sgn * 0.225
-            obox(o_cp.mesh, (xc, yr, zi0 + 0.003), X3, (inv_hx, inv_hy, 0.003), "Cold_Plate")
-            obox(o.mesh, (xc, yr, zi0 + 0.006 + inv_h / 2), X3, (inv_hx, inv_hy, inv_h / 2), "Inverter")
-            obox(o.mesh, (xc, yr, zi0 + 0.006 + inv_h + 0.0015), X3, (inv_hx - 0.008, inv_hy - 0.008, 0.0015), "Inverter_Lid")
-            inv_pos[(ci, sgn)] = (xc, yr, zi0 + 0.006 + inv_h / 2)
+            ex = (1.0, 0.0, 0.0)
+            def at(x_, r_):
+                return (sgn * x_, yc + nrm[1] * r_, zc + nrm[2] * r_)
+            obox(o_sd.mesh, at(x_inv, d["r_ho"] + 0.003), (ex, tng, nrm), (inv_hx, inv_hy, 0.007), "Cold_Plate")
+            c_ = at(x_inv, d["r_ho"] + 0.010 + inv_h / 2)
+            obox(o.mesh, c_, (ex, tng, nrm), (inv_hx, inv_hy, inv_h / 2), "Inverter")
+            obox(o.mesh, at(x_inv, d["r_ho"] + 0.010 + inv_h + 0.0015), (ex, tng, nrm), (inv_hx - 0.008, inv_hy - 0.008, 0.0015), "Inverter_Lid")
+            d["boxes"].append((f"inverter cyl{ci + 1}", c_, (ex, tng, nrm), (inv_hx, inv_hy, inv_h / 2 + 0.010)))
+            for k in (-1, 0, 1):                                       # three-phase stubs from the stator terminal
+                b0 = add(at(u_term, d["r_ho"] - 0.003), mul(tng, 0.030 * k))
+                pipe(o_ac.mesh, [b0, add(b0, mul(nrm, 0.016))], 0.006, "AC_Lead", n=8)
+            t0 = at(x_inv - inv_hx, d["r_ho"] + 0.010 + inv_h / 2)      # DC terminal on the inboard end -> side bus
+            taps[sgn].append(t0[1])
+            pipe(o_bus.mesh, [t0, (sgn * (x_bus + 0.006), t0[1], t0[2]), (sgn * x_bus, t0[1], z_bus)], 0.005, "HV_Orange", bend=0.006, n=8)
+    # DC/DC (+x) and controller placeholder (-x) stand beside the pack, under the cylinder-1 housings
+    x_dc = ACC_W / 2 + 0.043
+    dcdc = ((x_dc, 0.280, ACC_TOP0 - 0.055), (0.028, 0.120, 0.075))
+    ctrl = ((-x_dc, 0.250, ACC_TOP0 - 0.045), (0.026, 0.075, 0.055))
     o = new("OPF_DCDC_Converter", "OPFPLG_Electrical")
-    y_dc = 0.5 * (rows[0] + rows[1])
-    obox(o_cp.mesh, (0, y_dc, zi0 + 0.003), X3, (0.075, 0.120, 0.003), "Cold_Plate")
-    obox(o.mesh, (0, y_dc, zi0 + 0.006 + inv_h / 2), X3, (0.075, 0.120, inv_h / 2), "DCDC")
-    o = new("OPF_Control_Electronics_Placeholder", "OPFPLG_Electrical")
-    obox(o.mesh, (0, rows[2], zi0 + 0.026), X3, (0.075, 0.055, 0.026), "Controller")
-
-    # AC leads: inverter -> its stator terminal on top of the housing, outboard
-    u_term = d["so_u1"] - 0.030
-    z_term = zc + d["r_ho"]
-    o = new("OPF_AC_Leads", "OPFPLG_Electrical")
-    for (ci, sgn), (xi, yi, zi) in inv_pos.items():
-        yc = d["cyl_y"][ci]
-        xo = sgn * (u_term + 0.006 * (ci - 1))
-        ztr = zd + 0.012 + 0.0
-        pts = [(xi + sgn * inv_hx, yi, zi), (sgn * (dk["hw"] + 0.012), yi, zi), (sgn * (dk["hw"] + 0.012), yi, ztr)]
-        if ci > 0:
-            pts += [(xo, dk["y1"] + 0.02, z_term + 0.016), (xo, yc - 0.03, z_term + 0.016)]
-        pts += [(xo, yc, z_term + 0.012), (xo, yc, z_term - 0.004)]
-        pipe(o.mesh, pts, 0.009, "AC_Lead", bend=0.02, n=10)
-    # 900 V DC link along the deck, e-turbo feed, DC/DC, then the single feed down to the LTO pack
-    z_bus = zi0 + 0.006 + inv_h + 0.012
-    o = new("OPF_DC_Bus", "OPFPLG_Electrical")
+    obox(o.mesh, dcdc[0], X3, dcdc[1], "DCDC")
+    o2 = new("OPF_Control_Electronics_Placeholder", "OPFPLG_Electrical")
+    obox(o2.mesh, ctrl[0], X3, ctrl[1], "Controller")
+    o_cp = new("OPF_Cold_Plates", "OPFPLG_Cooling")
+    for (cxyz, hh), sg in ((dcdc, 1), (ctrl, -1)):
+        obox(o_cp.mesh, (cxyz[0] - sg * (hh[0] + 0.003), cxyz[1], cxyz[2]), X3, (0.003, hh[1], hh[2] - 0.005), "Cold_Plate")
+    d["boxes"] += [("DC/DC", dcdc[0], X3, dcdc[1]), ("controller", ctrl[0], X3, ctrl[1])]
+    o = new("OPF_HV_Pack_Link", "OPFPLG_Electrical")                   # DC/DC -> pack, 30 mm long
+    pk = (ACC_W / 2 + 0.006, 0.300, ACC_TOP_BAY - 0.024)
+    obox(o.mesh, pk, X3, (0.006, 0.022, 0.016), "HV_Orange")
+    # side buses: along each side at x 0.165 just above the block, down in front of cylinder 1, cross-link, to
+    # the DC/DC; the e-turbo joins the +x bus at the rear
+    y_fr, z_x = d["cyl_y"][0] - d["flange_r"] - 0.012, ACC_TOP0 + 0.030
     for sgn in (-1, 1):
-        pipe(o.mesh, [(sgn * 0.095, rows[0] - 0.04, z_bus), (sgn * 0.095, rows[2] + 0.04, z_bus)], 0.007, "HV_Orange", n=10)
-        for yr in rows:
-            pipe(o.mesh, [(sgn * 0.095, yr, z_bus), (sgn * 0.125, yr, z_bus), (sgn * 0.125, yr, z_bus - 0.014)],
-                 0.005, "HV_Orange", bend=0.008, n=8)
-    pipe(o.mesh, [(-0.095, y_dc, z_bus), (0.095, y_dc, z_bus)], 0.007, "HV_Orange", n=10)
-    pipe(o.mesh, [(0.0, yT, zT + 0.115 * 1.0), (0.0, yT - 0.02, cac["z1"] + 0.009), (0.0, cac["yf"] - 0.01, cac["z1"] + 0.009),
-                  (0.0, dk["y1"] - 0.01, z_bus + 0.02), (0.060, dk["y1"] - 0.03, z_bus)], 0.006, "HV_Orange", bend=0.03, n=10)
-    o = new("OPF_HV_Main_Feed", "OPFPLG_Electrical")
-    y_feed = 0.5 * (d["cyl_y"][0] + d["cyl_y"][1]) - 0.10
-    x_conn = ACC_W / 2
-    z_conn = ACC_TOP_BAY - ACC_H / 2
-    pipe(o.mesh, [(0.075, y_dc + 0.06, z_bus), (0.30, y_feed, z_bus + 0.004), (X_TRAY, y_feed, z_bus - 0.02),
-                  (X_TRAY, y_feed, 0.585), (0.497, y_feed, 0.472), (x_conn + 0.055, y_feed, z_conn), (x_conn, y_feed, z_conn)],
-         0.012, "HV_Orange", bend=0.035)
-    obox(o.mesh, (x_conn + 0.018, y_feed, z_conn), X3, (0.018, 0.028, 0.022), "HV_Orange")   # pack connector
-    d["y_feed"], d["x_feed"] = y_feed, x_conn
+        pts = [(sgn * x_bus, max(taps[sgn]) + 0.010, z_bus), (sgn * x_bus, y_fr + 0.04, z_bus), (sgn * x_bus, y_fr, z_bus - 0.03), (sgn * x_bus, y_fr, z_x)]
+        pipe(o_bus.mesh, pts, 0.007, "HV_Orange", bend=0.02, n=10)
+        route(f"DC bus {'L' if sgn > 0 else 'R'}", pts, 0.007)
+    pts = [(-x_bus, y_fr, z_x), (x_bus, y_fr, z_x), (x_dc - 0.010, y_fr + 0.010, z_x), (x_dc - 0.010, dcdc[0][1] - 0.080, dcdc[0][2] + dcdc[1][2])]
+    pipe(o_bus.mesh, pts, 0.007, "HV_Orange", bend=0.02, n=10)
+    route("DC cross-link to the DC/DC", pts, 0.007)
+    pts = [(0.0, yT, zT + 0.115), (0.09, yT - 0.06, 0.80), (x_bus, 1.30, z_bus - 0.022), (x_bus, max(taps[1]) + 0.010, z_bus)]
+    pipe(o_bus.mesh, pts, 0.006, "HV_Orange", bend=0.03, n=10)
+    route("e-turbo HV feed", pts[1:], 0.006)
 
     # ---- auxiliary propane circuits (left / right): receiver + pump -> inverter cold plates -> charge air
     #      cooler -> top sector of that side's pusher condenser
@@ -1142,34 +1533,58 @@ def build(preset=PRESET):
     for sgn, side in ((1, "L"), (-1, "R")):
         pfr = pusher_frame(sgn)
         zlip = PUSHER_Z0 - Z_LIP_OFF
-        th_a = math.radians(-90.0)
+        th_a, th_h = sector_table(sgn)[3][1], sector_table(sgn)[4][1]
         dth = math.radians(10.0) * sgn
         zr = 0.468
         cyl(o_rc.mesh, Frame((sgn * 0.085, yT, zr), (1, 0, 0)), 0.036, -0.058, 0.058, "Aux_Liquid", n=24)
-        obox(o_rc.mesh, (sgn * 0.085, yT - 0.060, zr), X3, (0.030, 0.022, 0.022), "Valve_Actuator")     # feed pump
+        obox(o_rc.mesh, (sgn * 0.085, yT - 0.057, zr), X3, (0.030, 0.024, 0.022), "Valve_Actuator")     # feed pump, on the receiver's front
+        for e in (-1, 1):                                                                                 # receiver end bosses
+            obox(o_rc.mesh, (sgn * 0.085, yT + e * 0.040, zr), X3, (0.014, 0.008, 0.014), "Aux_Liquid")
         y_val = 0.5 * (d["cyl_y"][1] + d["cyl_y"][2])          # lower valley between cylinders 2 and 3
-        y_up = 0.5 * (d["cyl_y"][0] + d["cyl_y"][1]) + 0.05
         o = new(f"OPF_Aux_Liquid_Feed_{side}", "OPFPLG_Cooling")
-        xe = sgn * (dk["hw"] - 0.012)
-        pipe(o.mesh, [(sgn * 0.085, yT - 0.082, zr), (sgn * 0.085, y_val, 0.455), (sgn * 0.400, y_val, 0.460),
-                      (sgn * 0.400, y_up, 0.460), (sgn * (X_TRAY - 0.004), y_up, 0.565), (sgn * (X_TRAY - 0.004), y_up, zd + 0.016),
-                      (xe, y_up, zd + 0.010), (xe, rows[0] - 0.05, zd + 0.010)], 0.008, "Aux_Liquid", bend=0.03, n=10)
-        pipe(o.mesh, [(xe, dk["y1"] - 0.012, zd + 0.010), (xe, y_up + 0.02, zd + 0.010)], 0.008, "Aux_Liquid", n=10)
-        # deck manifold -> cooler liquid header
-        pipe(o.mesh, [(xe, dk["y1"] - 0.012, zd + 0.010), (sgn * 0.20, cac["yf"] - 0.004, cac["z0"] - 0.020),
-                      (sgn * (hw - 0.004), cac["y0"] - 0.01, cac["z0"] + 0.004)], 0.008, "Aux_Liquid", bend=0.03, n=10)
-        for yr in rows:                                   # cold-plate branches
-            pipe(o.mesh, [(xe, yr, zd + 0.010), (sgn * 0.300, yr, zd + 0.006)], 0.005, "Aux_Liquid", n=8)
+        z_un = zc - d["flange_r"] - 0.018                              # under the chests, behind the pack
+        x_af = sgn * 0.085
+        if sgn > 0:                                                     # this side runs inboard of the exhaust outlet and under the manifold
+            z_un, x_af = d["ex_man"]["z_bot"] - 0.034, -0.020
+        box = dcdc if sgn > 0 else ctrl
+        (bx, by, bz), (hx_, hy_, hz_) = box
+        bx = bx - sgn * (hx_ + 0.003)                                  # the cold plate on the inboard face
+        pts_af = [(sgn * 0.085, yT - 0.078, zr), (x_af, yT - 0.125, 0.405), (x_af, y_val + 0.10, z_un), (x_af, y_val, z_un), (sgn * 0.400, y_val, z_un),
+                  (bx + (0.016 if sgn > 0 else 0.0), by + hy_ + 0.050, z_un), (bx, by + hy_, bz)]
+        pipe(o.mesh, pts_af, 0.008, "Aux_Liquid", bend=0.03, n=10)
+        route(f"aux feed {side}", pts_af[1:-1], 0.008)
+        # out of the front of the cold plate, up in front of cylinder 1, inboard to the cooler's liquid header
+        x_up = sgn * 0.120                                              # inboard of the side bus and the tilted inverters
+        pts = [(bx, by - hy_, bz - 0.030), (bx + sgn * 0.012, y_fr - 0.034, bz - 0.030), (bx + sgn * 0.012, y_fr - 0.034, bz + 0.170),
+               (x_up, y_fr - 0.034, bz + 0.250), (x_up, y_fr - 0.034, cac["z0"] + 0.010),
+               (cac_x(sgn) + sgn * 0.010, y_fr - 0.005, cac["z0"] + 0.010), (cac_x(sgn) - sgn * 0.004, cac["y0"] + 0.012, cac["z0"] + 0.006)]
+        pipe(o.mesh, pts, 0.008, "Aux_Liquid", bend=0.03, n=10)
+        route(f"cooler liquid feed {side}", pts[1:-1], 0.008)
         o = new(f"OPF_Ext_Vapour_Line_Aux_{side}", "OPFPLG_External")
-        pipe(o.mesh, [(sgn * (hw - 0.020), cac["y1"] + 0.01, cac["z1"] + 0.004), (sgn * 0.110, cac["ya"] + 0.05, 1.040),
-                      (sgn * 0.110, 1.80, 1.040), pfr.Pc(R_OUT, th_a - dth, zlip),
+        # out of the core's rear corner, aft in the 30 mm corridor beside the hot plenum, then up to the old line
+        x_v, z_v = (cac["xr1"] + 0.024 if sgn > 0 else -0.132), cac["z1"] - 0.012   # beside the rear bay
+        pts = [(cac_x(sgn) - sgn * 0.004, cac["y1"] - 0.010, zm - 0.011), (x_v, cac["y1"] + 0.022, z_v),
+               (x_v, cac["ya"] + 0.010, z_v), (sgn * 0.110, cac["ya"] + 0.12, 1.040)]
+        route(f"cooler vapour line {side}", pts[1:], 0.015)
+        pipe(o.mesh, pts + [(sgn * 0.110, 1.80, 1.040), pfr.Pc(R_OUT, th_a - dth, zlip),
                       pfr.Pc(R_OUT, th_a - dth, HX_Z_LE - 0.005), pfr.Pc(R_RING, th_a - dth, HX_Z_LE - 0.005)],
-             0.015, "Aux_Vapour", bend=0.06, n=12)
+             0.015, "Aux_Vapour", bend=0.04, n=12)
         o = new(f"OPF_Ext_Liquid_Return_Aux_{side}", "OPFPLG_External")
         z_te = HX_Z_LE + HX_CHORD + 0.005
         pipe(o.mesh, [pfr.Pc(R_RING, th_a + dth, z_te), pfr.Pc(R_OUT, th_a + dth, z_te), pfr.Pc(R_OUT, th_a + dth, zlip),
                       (sgn * 0.070, 1.86, 0.950), (sgn * 0.070, 1.70, 0.560), (sgn * 0.085, yT + 0.10, zr + 0.01),
-                      (sgn * 0.085, yT + 0.058, zr)], 0.009, "Aux_Liquid", bend=0.05, n=10)
+                      (sgn * 0.085, yT + 0.044, zr)], 0.009, "Aux_Liquid", bend=0.05, n=10)   # into the receiver's rear boss
+        # hot-stage circuit: vapour from the upper headers to the Hot sector, liquid back along the same run
+        # (pumped; the pump sits on the return in the tail). Both lines run above the cold-stage vapour line.
+        o = new(f"OPF_Ext_Hot_Stage_Lines_{side}", "OPFPLG_External")
+        for kind, dz, r_, mat_, z_hd, z_hx, th_ in (("vapour", 0.036, 0.013, "Hot_Aux_Vapour", cac["z1"] - 0.010, HX_Z_LE - 0.005, th_h - dth),
+                                                   ("liquid", 0.062, 0.007, "Hot_Aux_Liquid", zm + 0.009, z_te, th_h + dth)):
+            pts = [(cac_x(sgn) - sgn * 0.004, cac["y1"] - 0.010, z_hd), (x_v, cac["y1"] + 0.022, z_v + dz),
+                   (x_v, cac["ya"] + 0.010, z_v + dz), (sgn * 0.110, cac["ya"] + 0.12, 1.040 + dz)]
+            route(f"hot-stage {kind} line {side}", pts[1:], r_)
+            pipe(o.mesh, pts + [(sgn * 0.110, 1.80, 1.040 + dz), pfr.Pc(R_OUT, th_, zlip), pfr.Pc(R_OUT, th_, z_hx), pfr.Pc(R_RING, th_, z_hx)],
+                 r_, mat_, bend=0.04, n=12)
+        obox(o.mesh, (sgn * 0.110, 1.62, 1.040 + 0.062), X3, (0.018, 0.035, 0.018), "Valve_Actuator")   # hot-stage feed pump
 
     # ---- accumulator: 162S LTO power pack in a rectangular case (unchanged)
     o = new("OPF_Accumulator_Case", "OPFPLG_Accumulator")
@@ -1214,11 +1629,11 @@ def build(preset=PRESET):
             vane(o.mesh, df, th, PUSHER_HUB_R + 0.003, 0.357, z_le, chord, 0.008, sgn * FIN_CAMBER, "HX_Fin", np_=6)
         o = new(f"OPF_Fan_HX_Headers_{side}", "OPFPLG_Radiators")
         for name, th_c, span in sector_table(sgn):
-            aux = name == "Aux"
+            mv, ml = {"Aux": ("Aux_Vapour", "Aux_Liquid"), "Hot": ("Hot_Aux_Vapour", "Hot_Aux_Liquid")}.get(name, ("Propane_Vapour", "Propane_Liquid"))
             h = span / 2 - math.radians(2.5)
-            arc(o.mesh, df, R_RING, z_le - 0.005, th_c - h, th_c + h, 0.015, "Aux_Vapour" if aux else "Propane_Vapour",
+            arc(o.mesh, df, R_RING, z_le - 0.005, th_c - h, th_c + h, 0.015, mv,
                 n=max(8, int(span / 0.12)))
-            arc(o.mesh, df, R_RING, z_le + chord + 0.005, th_c - h, th_c + h, 0.012, "Aux_Liquid" if aux else "Propane_Liquid",
+            arc(o.mesh, df, R_RING, z_le + chord + 0.005, th_c - h, th_c + h, 0.012, ml,
                 n=max(8, int(span / 0.12)))
             for e in (-1, 1):                                # sector dividers in the duct wall
                 er = add(mul(df.e1, math.cos(th_c + e * span / 2)), mul(df.e2, math.sin(th_c + e * span / 2)))
@@ -1282,22 +1697,98 @@ def mass_estimate(d):
     hl = (d["END"] - d["t_cap"]) - d["h0"]
     housing = (sh(d["r_hi"], d["r_ho"], hl, RHO_AL) + pi * d["r_ho"] ** 2 * 0.007 * RHO_AL   # ribbed domed cap
                + 2 * sh(d["r_ho"], d["flange_r"], 0.008, RHO_AL) + sh(d["r_lo"], d["flange_r"], 0.006, RHO_AL) + 0.6)
-    # centre block beyond the bore walls and galleries: 3 mm outer skin, two pocketed bolt faces, webs between
-    # the bores, mount bosses, plus an allowance for injector bosses and internal ribbing
-    pitch_, Rb, Rf = d["pitch"], d["Rb"], d["flange_r"]
-    body_len = 2 * (d["blk_face"] - d["blk_tf"])
-    skin = (4 * pitch_ + 2 * pi * Rb) * body_len * 0.003
-    faces = 2 * (4 * pitch_ * Rf + pi * Rf * Rf - 3 * pi * d["r_lo"] ** 2) * d["blk_tf"] * 0.6
-    webs = 2 * (2 * Rb * body_len) * 0.004
-    ties = (skin + faces + webs) * RHO_AL + 4 * 0.5 + 5.0
+    # centre block beyond the bore walls and galleries: waist skin, two chests (ribbed walls ~40 % solid, inboard
+    # end walls, bolt bosses), the bolt-on exhaust shell, mount lugs, injector bosses and internal ribbing
+    pitch_, Rb, Rf, Rch = d["pitch"], d["Rb"], d["flange_r"], d["R_ch"]
+    rt_area = lambda R: 2 * pitch_ * 2 * R + pi * R * R              # racetrack area
+    rt_per = lambda R: 4 * pitch_ + 2 * pi * R                        # racetrack perimeter
+    waist_len = d["xi0"] + d["xe0"]
+    w_i, w_e = d["blk_face"] - d["xi0"], d["blk_face"] - d["xe0"]
+    waist = rt_per(Rb) * waist_len * 0.003 * RHO_AL
+    chest_walls = (rt_area(Rf) - rt_area(Rch)) * (w_i + w_e) * 0.40 * RHO_AL
+    end_walls = 2 * (rt_area(Rf) - 3 * pi * d["r_sl"] ** 2) * 0.008 * RHO_AL
+    bosses = 2 * 18 * pi * (0.0075 ** 2 - 0.0045 ** 2) * 0.5 * (w_i + w_e) * RHO_AL
+    # steel exhaust-port inserts in place of the aluminium sleeves
+    # exhaust side: closing wall toward the stators (5 mm, ribbed), three stainless port belts with necks and
+    # flanges, and the bolt-on manifold with its shield
+    wb = w_e - 0.008 - 0.018
+    belts = 3 * ((2 * pi * EX_BELT_R * wb + 2 * pi * (EX_BELT_R ** 2 - d["r_sl"] ** 2)) * EX_BELT_T * RHO_SS + 0.5)
+    man_len = 2 * pitch_ + 0.18
+    manifold = sum(2 * (max(EX_MAN_TOP[0], w_) + EX_MAN_TOP[1] + h_) for w_, h_ in EX_MAN_BOT) / len(EX_MAN_BOT) * man_len * 0.0015 * RHO_SS + 1.5 + 1.0
+    shell_ex = belts + manifold + (rt_area(Rf) - 3 * pi * d["r_sl"] ** 2) * 0.005 * 0.6 * RHO_AL
+    studs_ex = 0.0
+    inserts = 3 * sh(d["r_lo"], d["r_sl"], w_e - 0.008, RHO_SS - RHO_AL)
+    ties = waist + chest_walls + end_walls + bosses + shell_ex + studs_ex + inserts + 4 * 0.4 + 5.0
     acc = d.get("acc", dict(kg=LTO_NX * LTO_NY * 0.545))
     m = dict(stators_outer=6 * so, stators_inner=6 * si, moving=6 * d["m_move"], centre_sections=3 * centre,
              housings=6 * housing, block_ties=ties, fasteners=9.0, valves_injectors=9.0,
-             air_path=72.0, electronics=90.0, cooling=86.0, pack=acc["kg"] + 14.0)
+             exhaust_shell=shell_ex + studs_ex, port_inserts=inserts, air_path=72.0, electronics=90.0, cooling=86.0, pack=acc["kg"] + 14.0)
     m["block"] = m["centre_sections"] + m["housings"] + m["block_ties"] + m["fasteners"]
     m["engine"] = m["stators_outer"] + m["stators_inner"] + m["moving"] + m["block"] + m["valves_injectors"]
     m["package"] = m["engine"] + m["air_path"] + m["electronics"] + m["cooling"] + m["pack"]
     return m
+
+
+def gas_path(d, P):
+    """Mean velocities through the gas path at the continuous point (m/s), with targets."""
+    c = CYCLE
+    R_ = 287.0
+    p_s, T_cac = c["p_s"], 335.0
+    rho_c = p_s / (R_ * T_cac)
+    rho_h = (p_s + 0.08e5) / (R_ * P["T2"])
+    rho_e = p_s * 0.90 / (R_ * P["T_exh"])
+    rho_d = 1.06e5 / (R_ * (P["T_exh"] - 160.0))
+    Qc, Qh, Qe, Qd = P["m_air"] / rho_c, P["m_air"] / rho_h, P["m_exh"] / rho_e, P["m_exh"] / rho_d
+    tab, g = c["motion"], d["g"]
+    f_in = sum(1 for x in tab if x + g > d["cb"] - d["h_in"]) / len(tab)
+    f_ex = sum(1 for x in tab if x + g > d["cb"] - d["h_ex"]) / len(tab)
+    A = lambda r: math.pi * r * r
+    man_a = lambda k: 0.94 * (EX_MAN_TOP[0] * EX_MAN_TOP[1] + EX_MAN_BOT[k][0] * EX_MAN_BOT[k][1])
+    port = lambda h: 2 * math.pi * d["r_li"] * h * (PORT_ARC_DEG / 360.0) * PORT_OPEN   # ported arc x open share = 60 % of the circumference
+    bore_station = lambda w: w * 2 * (d["R_ch"] - d["r_sl"])              # chest section over and under a bore
+    w_i, w_e = d["blk_face"] - d["xi0"] - 0.008, d["blk_face"] - d["xe0"] - 0.008
+    cac = d["cac"]
+    L_core = cac["y1"] - cac["y0"]
+    w_core = 2 * cac["hw"] - 0.012
+    h_cold = cac["z0"] - cac["zp0"]
+    x_open0, x_open1 = d["cac_floor_open"]
+    share = (cac["x1"] - x_open1) / (2 * cac["hw"])                   # air that has to cross toward the opening
+    v_face = Qh / (w_core * L_core)
+    dp_core = 0.10 * ((cac["z1"] - cac["z0"]) / 0.0025) * 0.5 * (0.5 * (rho_h + rho_c)) * (v_face / 0.80) ** 2
+    rows = [
+        ("charge riser (hot)", Qh / A(d["r_ca"]), 60),
+        ("hot plenum where the riser comes in", Qh / ((cac["xr1"] - cac["xr0"]) * (cac["zh_r"] - cac["zr0"])), 45),
+        ("cooler core face, air passing straight down", v_face, 8),
+        ("cold plenum toward the air chest", Qc * share / (L_core * h_cold), 25),
+        ("floor opening into the air chest", Qc / ((x_open1 - x_open0) * L_core), 25),
+        ("air chest round each bore", Qc / 3 / bore_station(w_i), 40),
+        ("intake ports while open", Qc / 3 / f_in / port(d["h_in"]), 100),
+        ("exhaust ports while open", Qe / 3 / f_ex / port(d["h_ex"]), 150),
+        ("flange opening under the bore while the ports are open", Qe / 3 / f_ex / ((EX_THROAT_X1 - d["xe0"] - 0.014) * EX_THROAT_Y), 150),
+        ("manifold over the pack after cylinder 1", Qe / 3 / man_a(0), 95),
+        ("manifold at the pack's rear end (cylinders 1 + 2)", Qe * 2 / 3 / man_a(1), 95),
+        ("manifold behind the pack (cylinders 1 + 2)", Qe * 2 / 3 / man_a(2), 95),
+        ("manifold after cylinder 3", Qe / man_a(3), 95),
+        ("exhaust outlet", Qe / A(d["r_out"]), 95),
+        ("turbine inlet", Qe / A(d["scroll_rbig"] * TURBO_K), 110),
+        ("downpipe after the turbine", Qd / A(d["r_dp"]), 70),
+    ]
+    return dict(rows=rows, Q=dict(cold=Qc, hot=Qh, exh=Qe, down=Qd), open=(f_in, f_ex),
+                cac_len=L_core, cac_depth=cac["z1"] - cac["z0"], dp_core=dp_core, areas=dict(chest_in=bore_station(w_i), chest_ex=bore_station(w_e)))
+
+
+def crown_state(d, q_crown_w, T_boil=339.0):
+    """Sodium-cooled crown at a given crown heat (W): fluxes and temperatures from the propane to the gas face."""
+    na = d["na"]
+    fx_gas = q_crown_w / d["A"]
+    fx_sink = q_crown_w / na["a_sink"]                    # through the jacket and back-plate walls
+    fx_prop = fx_sink / NA_FIN                            # on the finned, propane-wetted side
+    T_wp = T_boil + 15.0                                  # wall on the propane side, nucleate boiling
+    T_wn = T_wp + fx_sink * NA_T_WALL / NA_K_WALL         # wall on the sodium side
+    T_na = T_wn + fx_sink / NA_H_SHAKE                    # bulk sodium
+    T_face = T_na + fx_gas / NA_H_SHAKE + fx_gas * NA_T_PLATE / NA_K_PLATE
+    return dict(face_margin=TI_T_LIMIT - T_face, q=q_crown_w, fx_gas=fx_gas, fx_sink=fx_sink, fx_prop=fx_prop, T_wn=T_wn, T_na=T_na, T_face=T_face,
+                chf_margin=CHF_PROPANE / fx_prop, melt_margin=T_wn - NA_T_MELT)
 
 
 def performance(d):
@@ -1347,13 +1838,21 @@ def performance(d):
     r["motor_only_start"] = r["motor_only_boost"] * c["p_s"] / 1.0e5
     # heat: one piston circuit, and one auxiliary circuit
     hyst = 2 * 0.012 * c["pb_mean"] * A * c["stroke"] * f
-    q_p = (c["Q_wall"] + c["W_fric"] + (c["E_mech"] - c["E_el"])) * f + hyst
+    q_inv1 = r["gen_kw"] * (1 - r["eta_inv"]) / 6 * 1e3                 # each inverter, into its housing's chamber
+    q_p = (c["Q_wall"] + c["W_fric"] + (c["E_mech"] - c["E_el"])) * f + hyst + q_inv1
     r["q_piston_kw"] = q_p / 1e3
     r["q_parts"] = dict(wall=c["Q_wall"] * f / 1e3, friction=c["W_fric"] * f / 1e3,
-                        stator=(c["E_mech"] - c["E_el"]) * f / 1e3, bounce=hyst / 1e3)
-    q_inv = r["gen_kw"] * (1 - r["eta_inv"]) + 4.0 + 3.0   # six inverters + DC/DC + e-turbo machine
-    r["q_aux_kw"] = (r["cac_kw"] + q_inv) / 2
-    r["q_total_kw"] = 6 * r["q_piston_kw"] + 2 * r["q_aux_kw"]
+                        stator=(c["E_mech"] - c["E_el"]) * f / 1e3, bounce=hyst / 1e3, inverter=q_inv1 / 1e3)
+    r["q_hot_kw"] = m_air * 1005.0 * (T2 - CAC_T_MID) / 2e3             # hot stage of the cooler, per side
+    r["q_aux_kw"] = (m_air * 1005.0 * (CAC_T_MID - T_cac) / 1e3 + 4.0 + 3.0) / 2   # cold stage + DC/DC + e-turbo machine
+    r["q_total_kw"] = 6 * r["q_piston_kw"] + 2 * (r["q_aux_kw"] + r["q_hot_kw"])
+    r["T_cond_hot"] = T_COND_HOT
+    # what the core can do with its real size (half the depth per stage), against the 62 C the cycle assumes
+    cac = d["cac"]
+    v_core = (cac["y1"] - cac["y0"]) * (2 * cac["hw"] - 0.012) * (cac["z1"] - cac["z0"])
+    ntu = 0.8 * CAC_BETA * CAC_H_AIR * v_core / (m_air * 1005.0)
+    T_m = (T_COND_HOT + 2.0) + (T2 - T_COND_HOT - 2.0) * math.exp(-ntu / 2)
+    r["cac_est"] = dict(v=v_core, ntu=ntu, T_mid=T_m, T_out=335.0 - 3.0 + (T_m - 332.0) * math.exp(-ntu / 2))
     r["p_cond"] = c["pb_min"] + 0.35 * (c["pb_max"] - c["pb_min"])
     r["T_cond_p"] = t_sat(r["p_cond"])
     r["T_boil_min"], r["T_boil_max"] = t_sat(c["pb_min"]), t_sat(c["pb_max"])
@@ -1367,8 +1866,8 @@ def performance(d):
 
     def fin_area(T_air):
         area, ok = 0.0, True
-        for q, Tc, frac in [(r["q_piston_kw"], r["T_cond_p"], (1 - AUX_SPAN_DEG / 360.0) / 3)] * 3 + \
-                           [(r["q_aux_kw"], r["T_cond_aux"], AUX_SPAN_DEG / 360.0)]:
+        for q, Tc, frac in [(r["q_piston_kw"], r["T_cond_p"], (1 - (AUX_SPAN_DEG + HOT_SPAN_DEG) / 360.0) / 3)] * 3 + \
+                           [(r["q_aux_kw"], r["T_cond_aux"], AUX_SPAN_DEG / 360.0), (r["q_hot_kw"], r["T_cond_hot"], HOT_SPAN_DEG / 360.0)]:
             mi = m_fan * frac
             eps = q * 1e3 / (mi * 1005.0 * (Tc - T_air))
             if eps >= 0.97:
@@ -1378,10 +1877,11 @@ def performance(d):
     r["hx_area_hot"], r["hx_ok_hot"] = fin_area(308.0)
     r["hx_area_std"], r["hx_ok_std"] = fin_area(288.0)
     r["hx_area_pack"] = a_ann * HX_CHORD * 1100.0
-    r.update(fan_air=m_fan, q_fan_kw=3 * r["q_piston_kw"] + r["q_aux_kw"],
-             hx_dT=(3 * r["q_piston_kw"] + r["q_aux_kw"]) * 1e3 / (m_fan * 1005.0),
+    r.update(fan_air=m_fan, q_fan_kw=3 * r["q_piston_kw"] + r["q_aux_kw"] + r["q_hot_kw"],
+             hx_dT=(3 * r["q_piston_kw"] + r["q_aux_kw"] + r["q_hot_kw"]) * 1e3 / (m_fan * 1005.0),
              vane_area=0.0)
     r["mep_bar"] = c["imep"] / 1e5
+    r["crown"] = crown_state(d, c.get("Q_crown", 0.5 * c["Q_wall"]) * f, 0.5 * (r["T_boil_min"] + r["T_boil_max"]))
     return r
 
 
@@ -1453,17 +1953,29 @@ def fit_report(d, objs):
     L.append(f"    motor alone, bounce chamber vented: can drive a full compression stroke x{P['motor_only_boost']:.2f} at full boost, "
              f"x{P['motor_only_start']:.1f} at start (compression work {P['w_comp'] / 1e3:.2f} kJ)")
     L.append(f"    peak gas load {c['p_max'] * d['A'] / 1e3:.0f} kN is carried by piston inertia (as in every free-piston engine), not by the machine")
-    L.append(f"    recommended DC link 900 V (SiC), tied to the {d['acc']['v_nom']:.0f} V LTO pack through the deck DC/DC")
+    L.append(f"    recommended DC link 900 V (SiC), tied to the {d['acc']['v_nom']:.0f} V LTO pack through the DC/DC beside it")
     L.append(f"  PROPANE CHAMBERS (one per piston): gas volume {d['Vb_idc'] * 1e3:.1f} -> {d['Vb_odc'] * 1e3:.1f} L, "
              f"pressure {c['pb_min'] / 1e5:.1f} -> {c['pb_max'] / 1e5:.1f} bar each stroke (boils at {P['T_boil_min'] - 273.15:.0f}-{P['T_boil_max'] - 273.15:.0f} C)")
     q = P["q_parts"]
+    K = P["crown"]
+    L.append(f"  PISTON: one printed titanium piece (Ti-6242), sodium-cooled crown ({d['na']['m'] * 1e3:.0f} g of sodium, half-filled gallery and a {NA_L_JACKET * 1e3:.0f} mm jacket down the skirt). "
+             f"Crown heat {K['q'] / 1e3:.1f} kW = {K['fx_gas'] / 1e6:.2f} MW/m2 on the gas face, spread to {K['fx_prop'] / 1e6:.2f} MW/m2 on the "
+             f"finned propane side (limit about {CHF_PROPANE / 1e6:.2f}: margin x{K['chf_margin']:.1f})   {'OK' if K['chf_margin'] >= 1.5 else 'CHECK'}")
+    L.append(f"    sodium about {K['T_na'] - 273.15:.0f} C, its cold wall {K['T_wn'] - 273.15:.0f} C ({K['melt_margin']:+.0f} K against freezing at 98 C)   "
+             f"{'OK' if K['melt_margin'] >= 15 else 'CHECK'}; gas face about {K['T_face'] - 273.15:.0f} C (the cycle model uses {c.get('T_crown', 480.0) - 273.15:.0f} C; alloy limit about {TI_T_LIMIT - 273.15:.0f} C)   {'OK' if K['face_margin'] >= 50 else 'CHECK'}")
+    L.append(f"    gas plate {NA_T_PLATE * 1e3:.1f} mm on printed pillars at {NA_PILLAR_PITCH * 1e3:.0f} mm pitch: about {d['na']['plate_mpa'] * c['p_max'] / 1e6:.0f} MPa bending at peak pressure (rough panel estimate)")
     L.append(f"    heat per circuit {P['q_piston_kw']:.0f} kW (crown + liner {q['wall']:.0f}, stators {q['stator']:.1f}, friction {q['friction']:.1f}, "
-             f"bounce losses {q['bounce']:.1f}) -> {P['vap_piston_gps']:.0f} g/s of vapour, "
+             f"bounce losses {q['bounce']:.1f}, inverter on top {q['inverter']:.1f}) -> {P['vap_piston_gps']:.0f} g/s of vapour, "
              f"{P['bleed_frac'] * 100:.0f} % of the swept volume bled per stroke")
     L.append(f"    condenser side held near {P['p_cond'] / 1e5:.1f} bar ({P['T_cond_p'] - 273.15:.0f} C): liquid enters through the check valve "
              f"at the low end of the swing, vapour leaves through the bleed valve at the high end")
-    L.append(f"  CHARGE AIR COOLER: {P['m_air']:.2f} kg/s from {P['T2'] - 273.15:.0f} C to 62 C, {P['cac_kw']:.0f} kW into the two auxiliary "
-             f"circuits ({P['q_aux_kw']:.0f} kW each with the inverter cold plates)")
+    E = P["cac_est"]
+    L.append(f"  CHARGE AIR COOLER, two stages: {P['m_air']:.2f} kg/s from {P['T2'] - 273.15:.0f} C to {CAC_T_MID - 273.15:.0f} C in the hot stage (top half of the core, "
+             f"{P['q_hot_kw']:.0f} kW per side into its own circuits condensing at {T_COND_HOT - 273.15:.0f} C), then to 62 C in the cold stage "
+             f"({P['q_aux_kw']:.0f} kW per auxiliary circuit with the DC/DC, controller and e-turbo machine, condensing at {P['T_cond_aux'] - 273.15:.0f} C)")
+    L.append(f"    core as drawn ({E['v'] * 1e3:.1f} L, NTU about {E['ntu']:.1f} at the assumed fin density): about {E['T_mid'] - 273.15:.0f} C between the stages and "
+             f"{E['T_out'] - 273.15:.0f} C out, against the 62 C the cycle assumes   {'OK' if E['T_out'] <= 338.0 else 'CHECK'}")
+    L.append(f"    condenser sectors per pusher: 3 piston circuits {(360 - AUX_SPAN_DEG - HOT_SPAN_DEG) / 3:.0f} deg each, hot stage {HOT_SPAN_DEG:.0f} deg, auxiliary {AUX_SPAN_DEG:.0f} deg")
     L.append(f"  HEAT REJECTION: {P['q_total_kw']:.0f} kW total, {P['q_fan_kw']:.0f} kW per pusher; at 60 m/s through the duct "
              f"({P['fan_air']:.0f} kg/s) the air warms {P['hx_dT']:.0f} K")
     L.append(f"    fin area needed per pusher: {P['hx_area_std']:.0f} m2 on a 15 C day, {P['hx_area_hot']:.0f} m2 on a 35 C day"
@@ -1475,15 +1987,40 @@ def fit_report(d, objs):
              f"{cl['disc_liner_idc'] * 1000:.0f} mm from the liner end and magnet sleeve {cl['sleeve_wall_idc'] * 1000:.0f} mm from the housing wall there; "
              f"disc {cl['disc_cap_odc'] * 1000:.0f} mm from the end cap at the outer dead centre; "
              f"{d['skirt_engaged'] * 100:.0f} % of the skirt still in the liner there   {'OK' if cl_ok else 'INTERFERENCE'}")
+    G = gas_path(d, P)
+    d["flow"] = G
+    L.append(f"  GAS PATH (mean velocities at the continuous point; air {P['m_air']:.2f} kg/s, exhaust {P['m_exh']:.2f} kg/s):")
+    for name, v, tgt in G["rows"]:
+        L.append(f"    {name:48s} {v:5.0f} m/s   target <= {tgt:3.0f}   {'OK' if v <= tgt else 'HIGH'}")
+    L.append(f"    charge air cooler: stacked, core {G['cac_len'] * 1000:.0f} mm long x {G['cac_depth'] * 1000:.0f} mm deep in the flow, rough core loss "
+             f"{G['dp_core'] / 1000:.1f} kPa; ports open {G['open'][0] * 100:.0f} % (intake) and {G['open'][1] * 100:.0f} % (exhaust) of the cycle")
+    L.append(f"    cooler to the block over the exhaust belts: {d['cac_ex_gap'] * 1000:.0f} mm at the closest point (wanted >= {CAC_EX_GAP_MIN * 1000:.0f}), with a double-skin heat shield {d['cac_shield_gap'] * 1000:.0f} mm off it in the gap; the cooler is {(d['cac']['xn'] - d['cac']['x0']) * 1000:.0f} mm wide at the neck and {2 * d['cac']['hw'] * 1000:.0f} mm at the core   {'OK' if d['cac_ex_gap'] >= CAC_EX_GAP_MIN else 'CHECK'}")
     L.append(f"  CENTRE BLOCK: one printed aluminium piece {2 * d['blk_face'] * 1000:.0f} mm wide x {(2 * d['pitch'] + 2 * d['flange_r']) * 1000:.0f} mm long x "
-             f"{2 * d['flange_r'] * 1000:.0f} mm tall with the three bores, port galleries and a propane cooling gallery through each combustion zone; "
+             f"{2 * d['flange_r'] * 1000:.0f} mm tall: a {(d['xi0'] + d['xe0']) * 1000:.0f} mm waist round the combustion zones with a propane gallery in each bore wall "
+             f"an air chest ({(d['blk_face'] - d['xi0']) * 1000:.0f} mm) and an exhaust housing ({(d['blk_face'] - d['xe0']) * 1000:.0f} mm) closed toward the stators; "
              f"six stator assemblies bolt to its two faces, 16 x M8 each, carrying about {c['pb_max'] * math.pi * d['r_hi'] ** 2 / 1e3:.0f} kN of chamber pressure load per joint")
+    Mx = P["mass"]
+    em = d["ex_man"]
+    tw_, tl_ = d["ex_throat"]
+    a_port = 2 * math.pi * d["r_li"] * d["h_ex"] * (PORT_ARC_DEG / 360.0) * PORT_OPEN
+    L.append(f"  PORTS: {N_PORTS} per ring on a {PORT_ARC_DEG:.0f} deg arc, {PORT_OPEN * 100:.0f} % open - exhaust ports centred on straight down, intake ports on straight up. "
+             f"Same heights (timing) and the same open area as the old all-round rings: {a_port * 1e4:.0f} cm2 exhaust, {a_port * d['h_in'] / d['h_ex'] * 1e4:.0f} cm2 intake per piston. "
+             f"Ports {PORT_ARC_DEG / N_PORTS * PORT_OPEN * math.pi / 180 * d['r_li'] * 1e3:.0f} mm wide, bridges {PORT_ARC_DEG / N_PORTS * (1 - PORT_OPEN) * math.pi / 180 * d['r_li'] * 1e3:.1f} mm (were 18 and 11.8).")
+    L.append(f"  EXHAUST: kept apart from the stator assemblies. The exhaust housing's underside is open, and the manifold flange sits {EX_FLANGE_D * 1e3:.0f} mm below each bore axis, "
+             f"{(EX_FLANGE_D - d['r_sl']) * 1e3:.0f} mm under the port insert (it was {(d['flange_r'] + 0.004) * 1e3:.0f} mm below the axis, on the block's underside). A short stainless collector wraps the ported arc and opens "
+             f"straight down through a {tw_ * 1e3:.0f} x {tl_ * 1e3:.0f} mm flange ({tw_ * tl_ * 1e4:.0f} cm2, x{tw_ * tl_ / a_port:.1f} the port area).")
+    L.append(f"    manifold: one stainless piece bolted to the three flanges. Its upper part ({EX_MAN_TOP[0] * 1e3:.0f} x {EX_MAN_TOP[1] * 1e3:.0f} mm) sits up inside the block; a lower part hangs below the block and grows: "
+             f"{' / '.join(f'{w_ * 1e3:.0f} x {h_ * 1e3:.0f}' for w_, h_ in EX_MAN_BOT)} mm after cylinder 1 / at the pack's rear end / behind the pack / after cylinder 3, then round into the bottom of the turbine volute. "
+             f"Collectors, manifold and closing wall about {Mx['exhaust_shell']:.0f} kg. All 16 bolts of each exhaust-side stator assembly are kept; the lowest four sit beside the manifold in bosses on the closing wall.")
+    L.append(f"    manifold to the LTO pack lid: {em['pack_gap1'] * 1000:.0f} mm after cylinder 1, {em['pack_gap'] * 1000:.0f} mm over the last {(em['y_pk'] - d['cyl_y'][1] + EX_THROAT_Y / 2) * 1000:.0f} mm of the pack where cylinder 2 feeds in; "
+             f"double radiant shield between (pack lowered {ACC_DROP * 1000:.0f} mm)   {'OK' if em['pack_gap'] >= 0.020 else 'CHECK'}")
+    L.append(f"    exhaust-port inserts: a printed steel sleeve carries the exhaust ports and bridges in each bore, with the propane gallery behind it (+{Mx['port_inserts']:.1f} kg over aluminium)")
     M = P["mass"]
     L.append(f"  MASS ESTIMATE (built up from this geometry, about +/-20 %):")
     L.append(f"    stators {M['stators_outer'] + M['stators_inner']:.0f} kg (outer {M['stators_outer'] / 6:.0f} + inner {M['stators_inner'] / 6:.0f} per piston), "
              f"moving parts {M['moving']:.0f} kg")
-    L.append(f"    printed aluminium block and casing {M['block']:.0f} kg: bore walls and galleries {M['centre_sections']:.0f}, generator housings "
-             f"{M['housings']:.0f}, block skin, bolt faces, webs and mounts {M['block_ties']:.0f}, fasteners {M['fasteners']:.0f}")
+    L.append(f"    block and casing {M['block']:.0f} kg: bore walls and galleries {M['centre_sections']:.0f}, generator housings "
+             f"{M['housings']:.0f}, waist, chests, exhaust collectors and manifold, port inserts and mounts {M['block_ties']:.0f}, fasteners {M['fasteners']:.0f}")
     L.append(f"    ENGINE {M['engine']:.0f} kg; with air path {M['air_path']:.0f}, electronics {M['electronics']:.0f}, cooling {M['cooling']:.0f} "
              f"and LTO pack {M['pack']:.0f}: PACKAGE {M['package']:.0f} kg ({M['package'] * 2.2046:.0f} lb)")
     L.append("  FIT in the X1 SkyRacer (craft coordinates, m):")
@@ -1507,7 +2044,7 @@ def fit_report(d, objs):
     up = group(lambda o: o.name in ("OPF_Charge_Air_Cooler", "OPF_CAC_Propane_Headers", "OPF_Inverters", "OPF_DCDC_Converter",
                                     "OPF_Control_Electronics_Placeholder", "OPF_DC_Bus", "OPF_Electronics_Deck"))
     t_top = min(body_ztop(v[0], v[1]) - v[2] for v in up)
-    L.append(f"    charge air cooler (spine, between the wing roots) and electronics deck (ahead of the wing): "
+    L.append(f"    charge air cooler (spine, between the wing roots): "
              f"{t_top * 1000:+.0f} mm under the outer skin line")
     ok_all &= t_top > 0
     wl = []
@@ -1528,11 +2065,14 @@ def fit_report(d, objs):
     zbm = at - ACC_H
     belly = min(zbm - belly_z(y) for y in ys)
     side = min(body_x(y, z) - ACC_W / 2 for y in ys for z in (zbm, at))
-    acc_ok = (hb - at) >= 0.009 and belly >= 0.05 - 1e-6 and side >= 0.035 - 1e-6
+    acc_ok = (hb - at) >= 0.009 and belly > 0.0 and side > 0.0     # pack is below the bay box by choice; it only has to stay in the skin
     ok_all &= acc_ok
-    L.append(f"  accumulator (unchanged): {a['n']} x Toshiba SCiB 20Ah-HP LTO, {a['n']}S, {a['v_nom']:.0f} V nominal, "
-             f"{a['kwh']:.1f} kWh, ~{a['kw10']:.0f} kW for 10 s; housings {(hb - at) * 1000:.0f} mm above its lid   {'OK' if acc_ok else 'CLASH'}")
-    L.append(f"  RESULT: {'fits' if ok_all else 'DOES NOT FIT'} - cylinders inside the bay box; e-turbo, cooler, deck and line trays are "
+    if ACC_DROP > 0:
+        L.append(f"  accumulator lowered {ACC_DROP * 1000:.0f} mm below the bay-box layout (not counted in the engine space):")
+    L.append(f"  accumulator: {a['n']} x Toshiba SCiB 20Ah-HP LTO, {a['n']}S, {a['v_nom']:.0f} V nominal, "
+             f"{a['kwh']:.1f} kWh, ~{a['kw10']:.0f} kW for 10 s; housings {(hb - at) * 1000:.0f} mm above its lid; "
+             f"belly skin {belly * 1000:.0f} mm below it, side skin {side * 1000:.0f} mm from its lower edges   {'OK' if acc_ok else 'CLASH'}")
+    L.append(f"  RESULT: {'fits' if ok_all else 'DOES NOT FIT'} - cylinders inside the bay box; e-turbo, cooler, inverters and line trays are "
              "outside the old box but inside the skin; pusher lines, condensers and tailpipe are external by design")
     d["perf"] = P
     return "\n".join(L), ok_all
@@ -1788,6 +2328,8 @@ def _previews(objs, refs, out_dir, d):
          None, (12, 8)),
         ("top", (0, 89.9), objs + ghosts, None, (7, 10)),
         ("side", (90, 0), objs + ghosts, None, (14, 6)),
+        ("electronics", (215, 38), [o for o in objs if o.coll in ("OPFPLG_Core", "OPFPLG_Block", "OPFPLG_Air", "OPFPLG_Electrical", "OPFPLG_Accumulator") or o.name in ("OPF_Cold_Plates", "OPF_Inverter_Saddles")],
+         None, (12, 8)),
         ("rear_hx", (0, 0), [o for o in objs if o.coll == "OPFPLG_Radiators"],
          None, (10, 5.5)),
     ]

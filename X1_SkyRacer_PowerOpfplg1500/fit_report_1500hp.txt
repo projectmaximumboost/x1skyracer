@@ -1,37 +1,67 @@
 X1 OPFPLG 1,500 hp - lightweight build: 150 bore x 124 stroke per piston, 13.1 L, aluminium windings, printed block
   bore 150 mm, stroke 124 mm per piston, 3 cylinders x 2 pistons, 13.1 L swept, compression ratio 16:1 after port closure
-  CYCLE MODEL (opf_cycle.py), continuous point: 44.9 Hz, mean piston speed 11.1 m/s, scavenge 3.80 bar abs, lambda 1.79, IMEP 21.5 bar, peak 225 bar
-    fuel 2472 kW (53.3 g/s propane) -> indicated 51.4 % -> stators 1141 kW -> DC link 1124 kW
-    e-turbo: compressor 329 kW at PR 3.96, turbine 347 kW at 792 K, net +11 kW to the DC link
-    NET 1132 kW = 1519 hp continuous at 45.8 % fuel-to-DC; 200 lb of propane lasts 28 min at this power
-    burst point (scavenge 4.1 bar, lambda 1.60): 1900 hp from the engine, peak 247 bar; with the LTO pack (413 hp for 10 s) the 2,000 hp ceiling is covered
-  LINEAR GENERATOR (per piston): double-sided magnet sleeve 251 mm dia x 175 mm, 6 poles, moving mass 14.7 kg (magnets 10.1 kg)
+  CYCLE MODEL (opf_cycle.py), continuous point: 46.1 Hz, mean piston speed 11.4 m/s, scavenge 3.80 bar abs, lambda 1.85, IMEP 21.0 bar, peak 220 bar
+    fuel 2453 kW (52.9 g/s propane) -> indicated 51.8 % -> stators 1143 kW -> DC link 1126 kW
+    e-turbo: compressor 337 kW at PR 3.96, turbine 355 kW at 790 K, net +10 kW to the DC link
+    NET 1133 kW = 1520 hp continuous at 46.2 % fuel-to-DC; 200 lb of propane lasts 29 min at this power
+    burst point (scavenge 4.1 bar, lambda 1.60): 1973 hp from the engine, peak 244 bar; with the LTO pack (413 hp for 10 s) the 2,000 hp ceiling is covered
+  LINEAR GENERATOR (per piston): double-sided magnet sleeve 251 mm dia x 175 mm, 6 poles, moving mass 14.0 kg (magnets 10.1 kg)
     stators: cobalt-iron cores, aluminium windings in 24 mm slots; outer stator covers 99 / 95 / 60 % of the sleeve at inner / mid / outer dead centre
     air-gap area 0.265 m2 (0.207 m2 working at mid stroke; inner stator covers 93 / 59 / 23 % at inner / mid / outer dead centre)
-    force 16.0 kN rms, 28.0 kN peak; air-gap shear 82 kPa rms against the 85 kPa continuous yardstick: margin x1.03
-    peak shear 121 kPa against 170 kPa short-term: margin x1.40
-    winding loss 3.9 % of converted power (7.8 kW per piston into boiling propane), core loss 1.8 %
+    force 15.6 kN rms, 27.1 kN peak; air-gap shear 80 kPa rms against the 85 kPa continuous yardstick: margin x1.06
+    peak shear 118 kPa against 170 kPa short-term: margin x1.44
+    winding loss 3.7 % of converted power (7.4 kW per piston into boiling propane), core loss 1.8 %
     motor alone, bounce chamber vented: can drive a full compression stroke x1.05 at full boost, x4.0 at start (compression work 3.14 kJ)
-    peak gas load 398 kN is carried by piston inertia (as in every free-piston engine), not by the machine
-    recommended DC link 900 V (SiC), tied to the 373 V LTO pack through the deck DC/DC
-  PROPANE CHAMBERS (one per piston): gas volume 15.9 -> 13.8 L, pressure 22.4 -> 26.3 bar each stroke (boils at 63-71 C)
-    heat per circuit 56 kW (crown + liner 36, stators 11.4, friction 3.5, bounce losses 5.8) -> 215 g/s of vapour, 4 % of the swept volume bled per stroke
-    condenser side held near 23.8 bar (66 C): liquid enters through the check valve at the low end of the swing, vapour leaves through the bleed valve at the high end
-  CHARGE AIR COOLER: 1.79 kg/s from 212 C to 62 C, 271 kW into the two auxiliary circuits (148 kW each with the inverter cold plates)
-  HEAT REJECTION: 633 kW total, 316 kW per pusher; at 60 m/s through the duct (24 kg/s) the air warms 13 K
-    fin area needed per pusher: 31 m2 on a 15 C day, 62 m2 on a 35 C day; a pack of thin cambered fins filling the annulus 140 mm deep holds about 56 m2 (no thick vanes)
+    peak gas load 388 kN is carried by piston inertia (as in every free-piston engine), not by the machine
+    recommended DC link 900 V (SiC), tied to the 373 V LTO pack through the DC/DC beside it
+  PROPANE CHAMBERS (one per piston): gas volume 16.1 -> 13.9 L, pressure 22.4 -> 26.3 bar each stroke (boils at 63-71 C)
+  PISTON: one printed titanium piece (Ti-6242), sodium-cooled crown (133 g of sodium, half-filled gallery and a 75 mm jacket down the skirt). Crown heat 16.5 kW = 0.93 MW/m2 on the gas face, spread to 0.24 MW/m2 on the finned propane side (limit about 0.41: margin x1.7)   OK
+    sodium about 158 C, its cold wall 139 C (+41 K against freezing at 98 C)   OK; gas face about 391 C (the cycle model uses 392 C; alloy limit about 540 C)   OK
+    gas plate 1.8 mm on printed pillars at 8 mm pitch: about 76 MPa bending at peak pressure (rough panel estimate)
+    heat per circuit 52 kW (crown + liner 29, stators 11.0, friction 3.5, bounce losses 6.0, inverter on top 2.9) -> 200 g/s of vapour, 4 % of the swept volume bled per stroke
+    condenser side held near 23.7 bar (66 C): liquid enters through the check valve at the low end of the swing, vapour leaves through the bleed valve at the high end
+  CHARGE AIR COOLER, two stages: 1.84 kg/s from 212 C to 110 C in the hot stage (top half of the core, 95 kW per side into its own circuits condensing at 82 C), then to 62 C in the cold stage (48 kW per auxiliary circuit with the DC/DC, controller and e-turbo machine, condensing at 59 C)
+    core as drawn (14.6 L, NTU about 2.4 at the assumed fin density): about 123 C between the stages and 78 C out, against the 62 C the cycle assumes   CHECK
+    condenser sectors per pusher: 3 piston circuits 67 deg each, hot stage 84 deg, auxiliary 76 deg
+  HEAT REJECTION: 600 kW total, 300 kW per pusher; at 60 m/s through the duct (24 kg/s) the air warms 12 K
+    fin area needed per pusher: 25 m2 on a 15 C day, 45 m2 on a 35 C day; a pack of thin cambered fins filling the annulus 140 mm deep holds about 56 m2 (no thick vanes)
   MOVING CLEARANCES: crowns 12 mm apart at the inner dead centre; carrier disc 10 mm from the liner end and magnet sleeve 9 mm from the housing wall there; disc 16 mm from the end cap at the outer dead centre; 103 % of the skirt still in the liner there   OK
-  CENTRE BLOCK: one printed aluminium piece 276 mm wide x 1108 mm long x 364 mm tall with the three bores, port galleries and a propane cooling gallery through each combustion zone; six stator assemblies bolt to its two faces, 16 x M8 each, carrying about 216 kN of chamber pressure load per joint
+  GAS PATH (mean velocities at the continuous point; air 1.84 kg/s, exhaust 1.89 kg/s):
+    charge riser (hot)                                  53 m/s   target <=  60   OK
+    hot plenum where the riser comes in                 25 m/s   target <=  45   OK
+    cooler core face, air passing straight down          3 m/s   target <=   8   OK
+    cold plenum toward the air chest                     7 m/s   target <=  25   OK
+    floor opening into the air chest                     6 m/s   target <=  25   OK
+    air chest round each bore                           16 m/s   target <=  40   OK
+    intake ports while open                             53 m/s   target <= 100   OK
+    exhaust ports while open                            95 m/s   target <= 150   OK
+    flange opening under the bore while the ports are open    70 m/s   target <= 150   OK
+    manifold over the pack after cylinder 1             87 m/s   target <=  95   OK
+    manifold at the pack's rear end (cylinders 1 + 2)    90 m/s   target <=  95   OK
+    manifold behind the pack (cylinders 1 + 2)          89 m/s   target <=  95   OK
+    manifold after cylinder 3                           95 m/s   target <=  95   OK
+    exhaust outlet                                      94 m/s   target <=  95   OK
+    turbine inlet                                      100 m/s   target <= 110   OK
+    downpipe after the turbine                          69 m/s   target <=  70   OK
+    charge air cooler: stacked, core 1033 mm long x 60 mm deep in the flow, rough core loss 0.0 kPa; ports open 40 % (intake) and 46 % (exhaust) of the cycle
+    cooler to the block over the exhaust belts: 28 mm at the closest point (wanted >= 25), with a double-skin heat shield 16 mm off it in the gap; the cooler is 148 mm wide at the neck and 248 mm at the core   OK
+  CENTRE BLOCK: one printed aluminium piece 276 mm wide x 1108 mm long x 364 mm tall: a 102 mm waist round the combustion zones with a propane gallery in each bore wall an air chest (74 mm) and an exhaust housing (100 mm) closed toward the stators; six stator assemblies bolt to its two faces, 16 x M8 each, carrying about 215 kN of chamber pressure load per joint
+  PORTS: 12 per ring on a 270 deg arc, 80 % open - exhaust ports centred on straight down, intake ports on straight up. Same heights (timing) and the same open area as the old all-round rings: 96 cm2 exhaust, 74 cm2 intake per piston. Ports 24 mm wide, bridges 5.9 mm (were 18 and 11.8).
+  EXHAUST: kept apart from the stator assemblies. The exhaust housing's underside is open, and the manifold flange sits 110 mm below each bore axis, 21 mm under the port insert (it was 186 mm below the axis, on the block's underside). A short stainless collector wraps the ported arc and opens straight down through a 64 x 204 mm flange (131 cm2, x1.4 the port area).
+    manifold: one stainless piece bolted to the three flanges. Its upper part (64 x 70 mm) sits up inside the block; a lower part hangs below the block and grows: 64 x 10 / 142 x 38 / 110 x 50 / 130 x 74 mm after cylinder 1 / at the pack's rear end / behind the pack / after cylinder 3, then round into the bottom of the turbine volute. Collectors, manifold and closing wall about 17 kg. All 16 bolts of each exhaust-side stator assembly are kept; the lowest four sit beside the manifold in bosses on the closing wall.
+    manifold to the LTO pack lid: 51 mm after cylinder 1, 23 mm over the last 191 mm of the pack where cylinder 2 feeds in; double radiant shield between (pack lowered 55 mm)   OK
+    exhaust-port inserts: a printed steel sleeve carries the exhaust ports and bridges in each bore, with the propane gallery behind it (+6.1 kg over aluminium)
   MASS ESTIMATE (built up from this geometry, about +/-20 %):
-    stators 262 kg (outer 30 + inner 14 per piston), moving parts 88 kg
-    printed aluminium block and casing 113 kg: bore walls and galleries 28, generator housings 51, block skin, bolt faces, webs and mounts 25, fasteners 9
-    ENGINE 472 kg; with air path 72, electronics 90, cooling 86 and LTO pack 102: PACKAGE 823 kg (1814 lb)
+    stators 262 kg (outer 30 + inner 14 per piston), moving parts 84 kg
+    block and casing 142 kg: bore walls and galleries 28, generator housings 51, waist, chests, exhaust collectors and manifold, port inserts and mounts 54, fasteners 9
+    ENGINE 497 kg; with air path 72, electronics 90, cooling 86 and LTO pack 102: PACKAGE 847 kg (1868 lb)
   FIT in the X1 SkyRacer (craft coordinates, m):
     cylinders + generators x: -0.496 .. +0.496   bay box -0.500 .. +0.500   margin +4 mm   OK
     cylinders + generators y: +0.145 .. +1.253   bay box +0.140 .. +1.500   margin +5 mm   OK
     cylinders + generators z: +0.510 .. +0.874   bay box +0.420 .. +0.880   margin +6 mm   OK
-    e-turbo: aft of the cylinders to y 1.625 (+125 mm past the old bay box, still ahead of the pushers); skin clearance sides +69 mm, belly +69 mm
-    charge air cooler (spine, between the wing roots) and electronics deck (ahead of the wing): +22 mm under the outer skin line
-    under the rear wing root (estimated lower surface): closest part OPF_Exhaust_Collector at +17 mm
-  accumulator (unchanged): 162 x Toshiba SCiB 20Ah-HP LTO, 162S, 373 V nominal, 7.5 kWh, ~308 kW for 10 s; housings 10 mm above its lid   OK
-  RESULT: fits - cylinders inside the bay box; e-turbo, cooler, deck and line trays are outside the old box but inside the skin; pusher lines, condensers and tailpipe are external by design
+    e-turbo: aft of the cylinders to y 1.625 (+125 mm past the old bay box, still ahead of the pushers); skin clearance sides +69 mm, belly +37 mm
+    charge air cooler (spine, between the wing roots): +20 mm under the outer skin line
+    under the rear wing root (estimated lower surface): closest part OPF_Charge_Air_Pipe at +11 mm
+  accumulator lowered 55 mm below the bay-box layout (not counted in the engine space):
+  accumulator: 162 x Toshiba SCiB 20Ah-HP LTO, 162S, 373 V nominal, 7.5 kWh, ~308 kW for 10 s; housings 65 mm above its lid; belly skin 61 mm below it, side skin 23 mm from its lower edges   OK
+  RESULT: fits - cylinders inside the bay box; e-turbo, cooler, inverters and line trays are outside the old box but inside the skin; pusher lines, condensers and tailpipe are external by design

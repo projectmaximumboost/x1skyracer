@@ -37,6 +37,8 @@ def simulate(P, cycles=140, dt=4e-6, trace=False):
     c = P.get("c0", 600.0)                          # generator damping (N s/m), controlled
     pb0 = P.get("pb0", 16e5)                        # bounce pressure at x_idc_t, controlled (bleed valve)
     T_wall = 480.0
+    T_crown = P.get("T_crown", T_wall)             # gas face of the piston crown (hotter with a sodium-cooled crown)
+    Q_crown = 0.0
     # start at ODC, ports open
     x, v = x_odc_t, 0.0
     p = p_s
@@ -46,7 +48,7 @@ def simulate(P, cycles=140, dt=4e-6, trace=False):
     hist = []
     for cyc in range(cycles):
         t = 0.0
-        E_mech = E_cu = Q_wall = W_gas = W_fric = W_bounce = 0.0
+        E_mech = E_cu = Q_wall = Q_crown = W_gas = W_fric = W_bounce = 0.0
         F2 = 0.0
         x_min, x_max, p_max, v_max, Fem_max = 1e9, -1e9, 0.0, 0.0, 0.0
         pb_max, pb_min, pb_sum = 0.0, 1e9, 0.0
@@ -73,9 +75,10 @@ def simulate(P, cycles=140, dt=4e-6, trace=False):
                     dQ = (nb_ - burned) * Qf * 0.975
                     burned = nb_
                 h = k_ht * 130.0 * (p / 1e5) ** 0.8 * T ** -0.4 * (2 * V) ** -0.06 * (P["v_mean_est"] + 1.4) ** 0.8
-                A_w = A + math.pi * B * x
-                dQw = h * A_w * (T - T_wall) * dt
+                dQc = h * A * (T - T_crown) * dt
+                dQw = dQc + h * math.pi * B * x * (T - T_wall) * dt
                 Q_wall += dQw
+                Q_crown += dQc
                 dV = A * v * dt
                 p += ((gam - 1.0) * (dQ - dQw) - gam * p * dV) / V
                 if x >= x_po and v > 0:
@@ -142,7 +145,7 @@ def simulate(P, cycles=140, dt=4e-6, trace=False):
     cr = x_po / x_min
     out.update(ok=True, f=f, x_min=x_min, x_max=x_max, stroke=x_max - x_min, cr=cr, p_max=p_max,
                v_max=v_max, v_mean=2 * (x_max - x_min) * f, E_mech=E_mech, E_el=E_el, P_el=E_el * f,
-               P_mech=E_mech * f, F_rms=F_rms, F_peak=Fem_max, Q_wall=Q_wall, W_gas=W_gas, W_fric=W_fric,
+               P_mech=E_mech * f, F_rms=F_rms, F_peak=Fem_max, Q_wall=Q_wall, Q_crown=Q_crown, W_gas=W_gas, W_fric=W_fric,
                eta_ind=W_gas / Qf, eta_el=E_el / Qf, wall_frac=Q_wall / Qf, c=c, pb0=pb0,
                pb_min=pb_min, pb_max=pb_max, pb_mean=pb_sum / n_steps, m_trap=m_t,
                imep=W_gas / (A * (x_max - x_min)), gen_eff=E_el / E_mech,
