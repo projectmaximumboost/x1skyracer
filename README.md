@@ -99,6 +99,9 @@ The powertrain is a series hybrid: a free-piston linear generator charges a smal
 - **[Design your own](https://buildflyingcars.com/x1-racer)** on buildflyingcars.com: build your own rules-compliant X1 racer.
 
 - **USA livery:** the SkyRacer in red, white and blue. Open the 3D viewer in [`liveries/usa/`](liveries/usa/).
+- **Open simulator cockpit:** the fuselage is open under the canopy, with a cabin liner, one 15.4 in centre screen, a centre console, a side-stick and a one-piece seal. The study, model and fold viewer are in [`X1_SkyRacer_FanTilt/`](X1_SkyRacer_FanTilt/).
+- **Yonder 01 livery:** a stock-car scheme with the number 01 on the roof and the sides, a Y mark and YONDER lettering. Open the 3D viewer in [`X1_SkyRacer_LiveryYonder01/`](X1_SkyRacer_LiveryYonder01/).
+- **XXONE 51 livery:** a black stock-car scheme, with the roof number 51 turned 90 degrees. Open the 3D viewer in [`X1_SkyRacer_LiveryXXONE/`](X1_SkyRacer_LiveryXXONE/).
 
 
 ## Maximum Engagement: play the game
@@ -149,6 +152,7 @@ Those speeds come from our own simulation, not from flight tests. No SkyRacer ha
 We are at the **concept and design stage**. No SkyRacer has been built or flown yet. What exists today:
 
 - A full 3D model, built by script and rebuilt from code, with fold hinges that clear each other
+- An open simulator cockpit under the canopy: a cabin liner, one 15.4 in centre screen, a centre console, a side-stick and a one-piece seal
 - Folded and unfolded fit checked against the rule limits
 - A power-versus-speed study, including pusher tilt, duct angle and wing angle
 - A simulated flight of the SkyRacer on [YouTube](https://youtu.be/pENUTlHcX6A)
@@ -198,6 +202,8 @@ This repository is public and read-only. Anyone can view and clone it. Only invi
 | `X1_SkyRacer_PowerOpfplg1500/` | The 1,500 hp continuous lightweight OPFPLG (150 × 124 mm, about 1,520 hp continuous): GLB, Blender and cycle scripts, previews, fit report and viewer |
 | `rule-book/` | A copy of the X1 Racing Rule Book |
 | `assets/` | The logo and the SkyRacer picture |
+| `X1_SkyRacer_LiveryYonder01/` | Yonder 01 stock-car livery: the paint script and a 3D viewer |
+| `X1_SkyRacer_LiveryXXONE/` | XXONE 51 black stock-car livery: the paint script and a 3D viewer |
 
 Large `.blend` working files are not stored here. They are rebuilt from the scripts. The `alpha` branch is the latest design.
 

@@ -24,6 +24,18 @@ Cockpit (ergonomic rework, Oct 2026 - outside design unchanged above the wing ro
     5th-percentile woman, bare-headed (head, shoulders, torso, knees, shins, feet, firewall)
   Tune with H_Y/H_Z, SEAT_BACK_DEG, FLOOR_Z, FOOTWELL and CANOPY.
 
+Simulator cockpit (Nov 2026):
+  * the fuselage skin is open under the canopy from the dash to the firewall, cut along the canopy edge;
+    skin, glass and seal share the same edge points, so the edge is smooth with no gaps
+  * one black seal runs all the way round the canopy as a single loop (Canopy_Frame, with the hoop)
+  * inside: a liner tub (Cockpit_Tub), matt decks under the glass ahead of the dash and behind the
+    firewall (Cockpit_Deck), a plain dash beam (Dash) and one 15.4 in landscape screen in the middle
+    (Dash_Screen housing, Screen_Display face with UVs 0..1), a centre console (Console) and a side-stick
+    (Stick, pivoting about its own origin); nothing in front of either seat
+  * empties Eye_L / Eye_R (design eye points), Screen_Centre and Stick_Pivot; the view over the nose and
+    sills and the reach to the screen are checked on every run for both manikins
+  Tune with COCKPIT, SCREEN and COCKPIT_STICK.
+
 Fuel: 200 lb propane (rule book 3.3/3.6) in three pressure vessels - one capsule tank inside each
 Dornier-style sponson (low on the flanks, between the stowed ducts) plus a transverse tank behind
 the firewall. The sponsons also carry the four wheels. The LTO accumulator under the engine bay is
@@ -67,6 +79,9 @@ MATS = {
     "Dark_Metal":  dict(color=(0.07, 0.075, 0.08), metal=0.80, rough=0.40),
     "Glass":       dict(color=(0.02, 0.025, 0.035), metal=0.00, rough=0.03, alpha=0.45),
     "Seat":        dict(color=(0.06, 0.06, 0.065), metal=0.00, rough=0.70),
+    "Cockpit_Tub": dict(color=(0.13, 0.13, 0.14),  metal=0.00, rough=0.85),   # cabin liner and trim
+    "Glare_Shield": dict(color=(0.03, 0.03, 0.035), metal=0.00, rough=0.95),  # matt decks under the glass
+    "Screen":      dict(color=(0.02, 0.05, 0.09),  metal=0.00, rough=0.08, emit=(0.10, 0.32, 0.55)),  # display face (UV 0..1)
     "Intake":      dict(color=(0.02, 0.02, 0.02),  metal=0.20, rough=0.60),
     "Tank":        dict(color=(0.70, 0.72, 0.75),  metal=0.85, rough=0.35),
     "Battery":     dict(color=(0.10, 0.25, 0.55),  metal=0.30, rough=0.50),
@@ -222,6 +237,41 @@ def sweep(path, r, segs=10):
         rings.append([p + r * (math.cos(2 * math.pi * j / segs) * u + math.sin(2 * math.pi * j / segs) * v)
                       for j in range(segs)])
     return loft(rings, start="c", end="c")
+
+
+def tube_loop(path, r, segs=8):
+    """Round tube along a closed path (the canopy seal): no ends, no twist."""
+    P = [np.asarray(q, float) for q in path]
+    n, rings = len(P), []
+    for i in range(n):
+        t = unit(P[(i + 1) % n] - P[i - 1])
+        u = unit(np.cross(t, (0, 0, 1.0)))
+        v = np.cross(u, t)
+        rings.append([P[i] + r * (math.cos(2 * math.pi * j / segs) * u + math.sin(2 * math.pi * j / segs) * v)
+                      for j in range(segs)])
+    return loft(rings + [rings[0]], wrap=True)
+
+
+def _compact(V, F):
+    """Drop the vertices no face uses."""
+    used = sorted({i for f in F for i in f})
+    new = {o: k for k, o in enumerate(used)}
+    return [np.asarray(V[i], float) for i in used], [tuple(new[i] for i in f) for f in F]
+
+
+def _facing(V, F, toward, away=False):
+    """Wind every face so its front looks toward the point (or away from it). The point may be a
+    function of the face centre."""
+    V = [np.asarray(v, float) for v in V]
+    out = []
+    for f in F:
+        c = np.mean([V[i] for i in f], 0)
+        T = np.asarray(toward(c) if callable(toward) else toward, float)
+        nrm = np.zeros(3)
+        for k in range(1, len(f) - 1):
+            nrm += np.cross(V[f[k]] - V[f[0]], V[f[k + 1]] - V[f[0]])
+        out.append(tuple(f) if (nrm @ (T - c) >= 0) != away else tuple(f[::-1]))
+    return V, out
 
 
 def rounded_rect(r0, r1, z0, z1, c, n=4, outer_z=()):
@@ -445,6 +495,26 @@ BAY_TUB = dict(y0=-0.60, y1=2.05, ramp_f=0.40,     # engine-bay tub (Oct 2026): 
                z_bot=((-0.60, 0.25), (0.80, 0.25), (1.45, 0.39), (2.05, 0.64)))   # than hw; keel (y, z)
 ENGINE_DZ = -0.13                                   # engine + accumulator lowered (same as x1_opfplg_blender.py)
 CANOPY = dict(y_f=-2.42, y_p=-0.62, y_e=0.55, peak=1.34, w_max=0.66)   # was y_p -0.80, peak 1.27, w 0.62 (stowed limit 1.346)
+# Simulator cockpit (Nov 2026). The fuselage skin is open under the canopy between the dash and the firewall,
+# cut exactly along the canopy edge (skin, glass and seal share the same edge points). Inside: a dark liner
+# tub, matt decks under the glass ahead of the dash and behind the firewall, and one landscape screen in the
+# middle of the dash (no instrument binnacle). Checked on every run from both manikins' eye points.
+COCKPIT = dict(stations=60,            # canopy / skin stations along the opening (bunched toward both ends)
+               y_dash=-1.42,           # aft face of the dash = front of the opening
+               dash_h=0.09, dash_d=0.11,   # dash beam height and depth (m)
+               liner_gap=0.022,        # liner sits this far inside the skin
+               seal_r=0.016,           # canopy seal bead radius (one loop all the way round)
+               y_toe=-2.30)            # front of the liner tub (toe bulkhead)
+SCREEN = dict(w=0.332, h=0.207,        # 15.4 in landscape, 16:10 (the size of a Model 3 screen)
+              bezel=0.006, t=0.010,
+              y=0.05, z=-0.035,        # centre: aft of the dash face, relative to the dash top on the centre line
+              recline_deg=12.0)        # top leans forward so the face looks up at the eyes
+COCKPIT_STICK = True                   # centre console with one side-stick both seats can reach
+
+def eye_point(P):
+    """Eye (y, z) of a seated manikin: ahead of and just below the head centre."""
+    return P["head"] + np.array([-0.08 * math.cos(math.radians(SEAT_BACK_DEG)), 0.0]) - P["up"] * 0.02
+
 KNEE_DEG = 125                                      # comfortable knee angle used to place the heels
 MANIKINS = {  # side-view link lengths (m), SAE J826 / ANSUR II based, bare head (no helmet)
     "95th-percentile man": dict(torso=0.90, head_c=0.80, head_r=0.10, shoulder=0.55, shoulder_w=0.53,
@@ -705,47 +775,98 @@ def build_parts():
     BODY_X = _body_x_frozen
     global BODY_X_AT
     BODY_X_AT = _body_x_frozen
-    rings, nc = [], 48
-    for y, hw, top, bot, ntop, nbot in samples:
-        zc, hh = (top + bot) / 2, (top - bot) / 2
-        ring = []
-        for j in range(nc):
-            t = 2 * math.pi * j / nc
-            c, s = math.cos(t), math.sin(t)
-            n = ntop if s >= 0 else nbot
-            ring.append((hw * math.copysign(abs(c) ** (2 / n), c), y,
-                         zc + hh * math.copysign(abs(s) ** (2 / n), s)))
-        rings.append([footwell(v, bot) for v in ring])
-    body = Part("Body", ["Livery"], split=60)
-    body.add(loft(rings, start=(0, NOSE_Y, 0.60), end="c"), uv=body_uv)
-    parts.append(body)
-
-    # ---- canopy: dark glass helmet-visor sitting on the sills, starting just behind the nose tip,
-    #      peaking over the seats, diving into the spine behind the firewall
+    # ---- canopy outline first: the fuselage skin is cut to it
     y_f, y_p, y_e, peak, w_max = (CANOPY[k] for k in ("y_f", "y_p", "y_e", "peak", "w_max"))
 
     def crown_w(y):
+        """Canopy crown height and half-width at station y (both close to nothing at the two ends)."""
         bt = body_z(0, y)
         if y <= y_p:
-            u = max((y - y_f) / (y_p - y_f), 0.02)
+            u = min(max((y - y_f) / (y_p - y_f), 0.0), 1.0)
             return bt + (peak - bt) * math.sin(math.pi / 2 * u) ** 0.8, w_max * u ** 0.45
-        u = min((y - y_p) / (y_e - y_p), 0.98)
-        return bt + (peak - bt) * math.cos(math.pi / 2 * u) ** 1.5, w_max * (1 - u ** 2.2) ** 0.5
+        u = min(max((y - y_p) / (y_e - y_p), 0.0), 1.0)
+        return bt + (peak - bt) * math.cos(math.pi / 2 * u) ** 1.5, w_max * max(1 - u ** 2.2, 0.0) ** 0.5
 
+    # stations along the canopy, bunched toward both ends where the outline turns across the body; the
+    # skin, the glass and the seal all use these same stations, so their edges coincide exactly
+    Y_DASH, Y_REAR = COCKPIT["y_dash"], FIREWALL_Y - 0.02
+    nst = COCKPIT["stations"]
+    ycs = [float(v) for v in y_f + (y_e - y_f) * (1 - np.cos(np.pi * np.arange(nst + 1) / nst)) / 2]
+    ycs[0], ycs[-1] = y_f, y_e
+    for yk in (Y_DASH, Y_REAR, COCKPIT["y_toe"]):
+        ycs = [v for v in ycs if abs(v - yk) > 0.012] + [yk]
+    ycs = sorted(ycs)
+    stations = ([q for q in samples if q[0] < y_f - 0.02]
+                + [[y] + [float(np.interp(y, sy, col(i))) for i in range(1, 6)] for y in ycs]
+                + [q for q in samples if q[0] > y_e + 0.02])
+    NC_SIDE, NC_DECK = 8, 12                 # points from the widest point up to the canopy edge / across the deck
+    nc_top = 2 * NC_SIDE + NC_DECK
+    nc = 2 * nc_top
+    J1, J2 = NC_SIDE, NC_SIDE + NC_DECK      # ring indices of the canopy edge, left (+X) and right
+    rings = []
+    for y, hw, top, bot, ntop, nbot in stations:
+        zc, hh = (top + bot) / 2, (top - bot) / 2
+        if y_f - 1e-9 <= y <= y_e + 1e-9:
+            w = crown_w(y)[1]
+            tw = math.acos(min(w / hw, 1.0) ** (ntop / 2))       # where the skin is exactly w wide
+        else:
+            # beyond the canopy ends the points ease back to even spacing, so the skin has no pinch lines
+            d_ = (y_f - y) if y < y_f else (y - y_e)
+            tw = math.pi / 2 + (math.pi * J1 / nc_top - math.pi / 2) * _ss01(d_ / 0.45)
+        ts = (list(np.linspace(0, tw, NC_SIDE + 1)) + list(np.linspace(tw, math.pi - tw, NC_DECK + 1))[1:]
+              + list(np.linspace(math.pi - tw, math.pi, NC_SIDE + 1))[1:]
+              + [math.pi + math.pi * k / nc_top for k in range(1, nc_top)])
+        ring = []
+        for t in ts:
+            c, sn = math.cos(t), math.sin(t)
+            n = ntop if sn >= 0 else nbot
+            ring.append((hw * math.copysign(abs(c) ** (2 / n), c), y,
+                         zc + hh * math.copysign(abs(sn) ** (2 / n), sn)))
+        rings.append([footwell(v, bot) for v in ring])
+    st_y = [r[0][1] for r in rings]
+    Vb, Fb = loft(rings, start=(0, NOSE_Y, 0.60), end="c")
+    # skin inside the canopy edge: open between the dash and the firewall (the cockpit opening); ahead of
+    # the dash and behind the firewall it becomes a matt deck under the glass
+    skin, deck = [], []
+    for k, f in enumerate(Fb):
+        i, j = divmod(k, nc)
+        if k < (len(rings) - 1) * nc and J1 <= j < J2 and st_y[i] >= y_f - 1e-9 and st_y[i + 1] <= y_e + 1e-9:
+            if not (Y_DASH - 1e-9 <= st_y[i] and st_y[i + 1] <= Y_REAR + 1e-9):
+                deck.append(f)
+            continue
+        skin.append(f)
+    body = Part("Body", ["Livery"], split=60)
+    body.add(_compact(Vb, skin), uv=body_uv)
+    parts.append(body)
+    deck_p = Part("Cockpit_Deck", ["Glare_Shield"], split=60)
+    dV, dF = _compact(Vb, deck)
+    deck_p.add(_facing(dV, dF, (0, -0.9, 5.0)))                                # top faces look up
+    deck_p.add(_facing([v - [0, 0, 0.003] for v in dV], dF, (0, -0.9, -5.0)))  # underside, seen from the cabin
+    parts.append(deck_p)
+
+    # ---- canopy: dark glass helmet-visor from just behind the nose tip, peaking over the seats, diving
+    #      into the spine behind the firewall. Its edge is the skin's own edge, point for point.
+    ci = [i for i, y in enumerate(st_y) if y_f + 1e-9 < y < y_e - 1e-9]
+    i_f, i_e = ci[0] - 1, ci[-1] + 1                               # the two end stations (edge closes to a point)
+    edge_l = [np.array(rings[i][J1]) for i in ci]
+    edge_r = [np.array(rings[i][J2]) for i in ci]
+    pole_f, pole_e = np.array(rings[i_f][J1]), np.array(rings[i_e][J1])
     crings = []
-    for y in np.linspace(y_f + 0.01, y_e - 0.01, 40):
-        crown, w = crown_w(y)
-        sill = body_z(w, y) - 0.015
-        crings.append([(w * math.copysign(abs(math.cos(a)) ** (2 / 2.4), math.cos(a)), y,
-                        sill + (crown - sill) * abs(math.sin(a)) ** (2 / 2.4))
-                       for a in np.linspace(0, math.pi, 26)])
+    for i, el, er in zip(ci, edge_l, edge_r):
+        y = st_y[i]
+        crown, w, sill = crown_w(y)[0], el[0], el[2]
+        ring = [(w * math.copysign(abs(math.cos(a)) ** (2 / 2.4), math.cos(a)), y,
+                 sill + (crown - sill) * abs(math.sin(a)) ** (2 / 2.4)) for a in np.linspace(0, math.pi, 26)]
+        ring[0], ring[-1] = tuple(el), tuple(er)
+        crings.append(ring)
     canopy = Part("Canopy", ["Glass"])
-    canopy.add(loft(crings, wrap=False, start=(0, y_f, body_z(0, y_f)), end=(0, y_e, body_z(0, y_e))))
+    canopy.add(loft(crings, wrap=False, start=pole_f, end=pole_e))
     parts.append(canopy)
+    # one black seal bead all the way round the canopy edge (a closed loop), plus the hoop behind the seats
     frame = Part("Canopy_Frame", ["Paint_Black"])
-    for side in (1, -1):                                          # black sills along the glass edge
-        frame.add(sweep([(side * crown_w(y)[1], y, body_z(crown_w(y)[1], y) - 0.005)
-                         for y in np.linspace(y_f + 0.15, y_e - 0.10, 22)], 0.022, 8))
+    lift = np.array([0, 0, 0.004])
+    loop = [pole_f + lift] + [e + lift for e in edge_l] + [pole_e + lift] + [e + lift for e in edge_r[::-1]]
+    frame.add(tube_loop(loop, COCKPIT["seal_r"], 8))
     yb = -0.10                                                    # B-pillar hoop behind the seats
     cr, wb = crown_w(yb)
     sill_b = body_z(wb, yb)
@@ -817,6 +938,98 @@ def build_parts():
     rest.add(box((SEAT_X, float(tb[0]), float(tb[1]) - 0.012), (0.26, float(np.linalg.norm(pm["toe"] - pm["heel"])), 0.012),
                  rot_x(math.atan2(ft[1], ft[0]))), mat=0)
     parts += [rest, rest.mirrored("Footrest_R")]
+
+    # ---- simulator cockpit interior: liner tub, dash, one centre screen, centre console with a side-stick
+    g = COCKPIT["liner_gap"]
+    seq = list(range(J1, -1, -1)) + list(range(nc - 1, J2 - 1, -1))     # canopy edge, down round the belly, up
+    li = [i for i, y in enumerate(st_y) if COCKPIT["y_toe"] - 1e-9 <= y <= Y_REAR + 1e-9]
+
+    def inset(poly):
+        """The skin section moved in by the liner gap (in its own plane)."""
+        P = np.array(poly, float)
+        c = P.mean(0)
+        out = []
+        for k in range(len(P)):
+            t = unit(P[min(k + 1, len(P) - 1)] - P[max(k - 1, 0)])
+            nrm = np.array([-t[2], 0.0, t[0]])
+            out.append(P[k] + g * (nrm if nrm @ (c - P[k]) >= 0 else -nrm))
+        return out
+    lrings = [inset([rings[i][j] for j in seq]) for i in li]
+    axis_pt = lambda c: (0.0, c[1], 0.62)                               # cabin centre line at that station
+    tub = Part("Cockpit_Tub", ["Cockpit_Tub"], split=60)
+    tub.add(_facing(*loft(lrings, wrap=False), axis_pt))
+    for ring_, i_, into in ((lrings[0], li[0], 1.0), (lrings[-1], li[-1], -1.0)):   # toe and rear bulkhead trim
+        # closed right up to the deck: liner section plus the deck's own arc across the top
+        P = [np.asarray(q, float) for q in ring_] + [np.array(rings[i_][j]) - [0, 0, 0.004]
+                                                     for j in range(J2 - 1, J1, -1)]
+        V = P + [np.mean(P, 0)]
+        F = [(len(P), k, (k + 1) % len(P)) for k in range(len(P))]
+        tub.add(_facing(V, F, np.mean(P, 0) + [0, into, 0]))
+    for k, (ia, ib) in enumerate(zip(li[:-1], li[1:])):                 # sill coaming: skin edge to liner edge
+        if st_y[ia] < Y_DASH - 1e-9:
+            continue
+        for j, m_ in ((J1, 0), (J2, -1)):
+            V = [np.array(rings[ia][j]), np.array(rings[ib][j]), np.array(lrings[k + 1][m_]), np.array(lrings[k][m_])]
+            tub.add(_facing(V, [(0, 1, 2, 3)], (0, st_y[ia], 5.0)))
+    parts.append(tub)
+
+    # dash: a plain beam under the front deck from wall to wall, with one bright strip; nothing in front
+    # of either seat
+    dH, dD = COCKPIT["dash_h"], COCKPIT["dash_d"]
+    i_d = int(np.argmin(abs(np.array(st_y) - Y_DASH)))
+    w_top = rings[i_d][J1][0] - g - 0.004
+    zt = lambda x, y: body_z(x, y) - 0.004                              # just under the deck surface
+    dash = Part("Dash", ["Cockpit_Tub", "Silver"], smooth=False)
+    ya_, yf_ = Y_DASH + 0.012, Y_DASH - dD
+    drings, trings = [], []
+    for s_ in np.linspace(-1, 1, 25):
+        xt = s_ * w_top
+        zb = zt(xt, Y_DASH) - dH
+        xb = s_ * (skin_hw(Y_DASH, zb) - g - 0.004)
+        drings.append([(xt, yf_, zt(xt, yf_)), (xt, ya_, zt(xt, Y_DASH)), (xb, ya_, zb), (xb, yf_, zb)])
+        f0, f1 = 0.30, 0.42                                             # bright strip across the aft face
+        trings.append([(xt + (xb - xt) * f, ya_ + d_, zt(xt, Y_DASH) - dH * f)
+                       for f, d_ in ((f0, 0.0), (f0, 0.004), (f1, 0.004), (f1, 0.0))])
+    dash.add(loft(drings, start="c", end="c"), mat=0)
+    dash.add(loft(trings, start="c", end="c"), mat=1)
+    # the one screen: landscape, in the middle, floating just aft of the dash
+    sc = SCREEN
+    ar = math.radians(sc["recline_deg"])
+    s_c = np.array([0.0, Y_DASH + sc["y"], body_z(0, Y_DASH) + sc["z"]])
+    s_n = np.array([0.0, math.cos(ar), math.sin(ar)])                   # face normal: aft and up, at the eyes
+    s_up = np.array([0.0, -math.sin(ar), math.cos(ar)])
+    dash.add(box(((0, (ya_ + s_c[1]) / 2 - 0.016, s_c[2] - 0.03)), (0.07, s_c[1] - ya_ + 0.008, 0.05)), mat=0)   # neck
+    parts.append(dash)
+    bezel = Part("Dash_Screen", ["Paint_Black"], smooth=False)          # the housing
+    bezel.add(box(s_c - s_n * sc["t"] / 2, (sc["w"] + 2 * sc["bezel"], sc["t"], sc["h"] + 2 * sc["bezel"]),
+                  rot_x(ar)))
+    # the display face is its own part with UVs 0..1 (u left to right as the occupants see it, v bottom
+    # to top), so a simulator can draw its instruments straight onto it
+    screen = Part("Screen_Display", ["Screen"], smooth=False)
+    q0 = s_c + s_n * 0.0008
+    hx, hz = np.array([sc["w"] / 2, 0, 0]), s_up * sc["h"] / 2
+    screen.add(([q0 + hx - hz, q0 - hx - hz, q0 - hx + hz, q0 + hx + hz], [(0, 1, 2, 3)]),
+               uv=lambda v: (float((sc["w"] / 2 - (v - s_c)[0]) / sc["w"]), float((v - s_c) @ s_up / sc["h"] + 0.5)))
+    parts += [bezel, screen]
+    empties["Screen_Centre"] = tuple(float(v) for v in s_c)
+    screen.centre, screen.normal, screen.up = s_c, s_n, s_up
+    if COCKPIT_STICK:
+        con_top = H_Z + 0.185                                           # elbow height
+        con = Part("Console", ["Cockpit_Tub", "Dark_Metal"], smooth=False)
+        con.add(box((0, -0.96, (con_top + 0.24) / 2), (0.14, 0.68, con_top - 0.24)), mat=0)
+        con.add(box((0, -0.80, con_top + 0.006), (0.12, 0.30, 0.012)), mat=1)   # arm pad
+        parts.append(con)
+        piv = (0.0, -1.10, con_top)
+        stick = Part("Stick", ["Dark_Metal", "Seat", "Paint_Red"], piv, smooth=False)   # pivots about its origin
+        stick.add(cylinder((0, 0, 0), (0, 0, 0.018), 0.035, 16), mat=0)
+        stick.add(cylinder((0, 0, 0.018), (0, -0.008, 0.060), 0.010, 10), mat=0)
+        stick.add(cylinder((0, -0.008, 0.060), (0, -0.024, 0.150), 0.019, 14), mat=1)
+        stick.add(cylinder((0, -0.024, 0.150), (0, -0.026, 0.160), 0.012, 10), mat=2)   # top button
+        parts.append(stick)
+        empties["Stick_Pivot"] = piv
+    for sd, sg in (("L", 1), ("R", -1)):                                # design eye: midway between the manikins
+        e_ = (eye_point(pm) + eye_point(pw)) / 2
+        empties[f"Eye_{sd}"] = (sg * SEAT_X, float(e_[0]), float(e_[1]))
 
     # ---- engine bay under the raised spine, firewall to the pushers
     BAY_Y0, BAY_Y1 = FIREWALL_Y, FWD_C[1] - FWD_HL - 0.05
@@ -1077,9 +1290,18 @@ def build_parts():
             col.parent = f"Hinge_{'Front' if key == 'F' else 'Rear'}Duct_{side}"
             parts.append(col)
 
+    # parts let into the skin beside the cabin (flank swoosh, front wing roots) must not show inside it:
+    # hold their buried side within 4 mm of the skin, outside the liner
+    for q in parts:
+        if q.name.startswith(("Flank_Swoosh", "Front_Wing_Root")):
+            for k, v in enumerate(q.V):
+                if COCKPIT["y_toe"] - 0.05 < v[1] < Y_REAR + 0.05:
+                    hw_ = skin_hw(v[1], v[2])
+                    if hw_ > 0.05 and abs(v[0]) < hw_ - 0.004:
+                        q.V[k] = np.array([math.copysign(hw_ - 0.004, v[0]), v[1], v[2]])
     parts += engine_ext                     # exhaust tailpipe, external propane lines, pusher heat exchangers
 
-    eye = pm["head"] + np.array([-0.08 * math.cos(ab), 0.0]) - pm["up"] * 0.02   # eyes ahead of head centre
+    eye = eye_point(pm)                                           # eyes ahead of head centre
     empties["Cam_Driver_Eye"] = (SEAT_X, float(eye[0]), float(eye[1]))
 
     # fold angles with the hinge axes on the skins: bisect the wing fold so the folded craft's top stays
@@ -1269,6 +1491,7 @@ def rule_check(parts):
             continue
         print(f"  {h:22s} fold {math.degrees(d['angle']):+6.1f} deg")
     ergo_check(parts)
+    sim_cockpit_check(parts)
     return rows
 
 
@@ -1365,6 +1588,51 @@ def ergo_check(parts, verbose=True):
 
 
 # ------------------------------------------------------------------ Blender side
+def sim_cockpit_check(parts, verbose=True):
+    """Outside view and screen ergonomics from both manikins' eye points (left seat; right is the mirror)."""
+    d = {p.name: p for p in parts}
+    solid = np.vstack([posed(d[n]) for n in ("Body", "Cockpit_Deck", "Dash", "Canopy_Frame")])
+    scr = d["Screen_Display"]
+    Vs = posed(d["Dash_Screen"])
+    c, up = scr.centre, scr.up
+    out = {}
+    if verbose:
+        print("Simulator cockpit (left seat; the right seat is the mirror image)")
+        print(f"  Screen: {SCREEN['w'] / IN:.1f} x {SCREEN['h'] / IN:.1f} in landscape "
+              f"({math.hypot(SCREEN['w'], SCREEN['h']) / IN:.1f} in diagonal), centre x 0, "
+              f"y {c[1]:+.2f}, z {c[2]:.2f} m, reclined {SCREEN['recline_deg']:.0f} deg")
+    for name, mk in MANIKINS.items():
+        P = posture(mk)
+        e = np.array([SEAT_X, *eye_point(P)])
+        ahead = solid[(abs(solid[:, 0] - SEAT_X) < 0.04) & (solid[:, 1] < e[1] - 0.05)]
+        nose = -math.degrees(np.arctan2(ahead[:, 2] - e[2], e[1] - ahead[:, 1]).max())
+        side = solid[(abs(solid[:, 1] - e[1]) < 0.05) & (solid[:, 0] > SEAT_X + 0.05)]
+        sill = -math.degrees(np.arctan2(side[:, 2] - e[2], side[:, 0] - e[0]).max())
+        top = Vs[Vs[:, 2].argmax()]
+        s_top = -math.degrees(math.atan2(top[2] - e[2], math.hypot(e[1] - top[1], e[0] - top[0])))
+        dist = float(np.linalg.norm(c - e))
+        az = math.degrees(math.atan2(e[0] - c[0], e[1] - c[1]))
+        dn = -math.degrees(math.atan2(c[2] - e[2], math.hypot(e[1] - c[1], e[0] - c[0])))
+        sh = np.array([SEAT_X - (mk["shoulder_w"] / 2 - 0.04), *P["shoulder"]])       # inboard shoulder joint
+        reach_c = float(np.linalg.norm(c - sh))
+        far = c + np.array([-SCREEN["w"] / 2, 0, 0]) + up * SCREEN["h"] / 2             # far top corner
+        reach_f = float(np.linalg.norm(far - sh))
+        knee = np.array([SEAT_X, *P["knee"]])
+        Vd = posed(d["Dash"])
+        under = Vd[(abs(Vd[:, 0] - SEAT_X) < 0.12)][:, 2].min() - (knee[2] + 0.065)
+        k_scr = Vs[:, 2].min() - (knee[2] + 0.065)
+        out[name] = dict(eye=e, nose=nose, sill=sill, screen_top=s_top, dist=dist, az=az, down=dn,
+                         reach=reach_c, reach_far=reach_f, knee_dash=under, knee_screen=k_scr)
+        if verbose:
+            print(f"  {name}: eye y {e[1]:+.2f}, z {e[2]:.2f} m")
+            print(f"      view down over the nose {nose:4.1f} deg, over the side sill {sill:4.1f} deg; "
+                  f"top of the screen sits {s_top:4.1f} deg below eye level")
+            print(f"      screen centre {dist / IN:4.1f} in from the eye, {az:2.0f} deg inboard, {dn:2.0f} deg down; "
+                  f"reach from the shoulder {reach_c / IN:4.1f} in (far top corner {reach_f / IN:4.1f} in)")
+            print(f"      knee to the dash underside {under / IN:+4.1f} in, to the screen's lower edge {k_scr / IN:+4.1f} in")
+    return out
+
+
 def srgb_to_lin(c):
     return tuple(x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c)
 
@@ -1430,6 +1698,13 @@ def build_blender(parts, empties, livery):
         else:
             bsdf.inputs["Base Color"].default_value = (*srgb_to_lin(d["color"]), 1)
             m.diffuse_color = (*srgb_to_lin(d["color"]), 1)
+        if "emit" in d:
+            for key_ in ("Emission Color", "Emission"):
+                if key_ in bsdf.inputs:
+                    bsdf.inputs[key_].default_value = (*srgb_to_lin(d["emit"]), 1)
+                    break
+            if "Emission Strength" in bsdf.inputs:
+                bsdf.inputs["Emission Strength"].default_value = 1.0
         if "alpha" in d:
             bsdf.inputs["Alpha"].default_value = d["alpha"]
             for attr, val in (("blend_method", "BLEND"), ("surface_render_method", "BLENDED")):

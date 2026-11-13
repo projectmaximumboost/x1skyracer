@@ -21,21 +21,31 @@ X1 Racing rule check
   Hinge_RearDuct_L       fold +180.0 deg
 Cockpit fit (bare-headed, left seat; right seat is the mirror image)
   95th-percentile man: head to canopy  +1.2 in (OK, want >= 1.0 in)
-      shoulders  +5.0 in to canopy OK
-      torso      +8.4 in to floor  OK
-      knees     +11.4 in to floor  OK
-      shins      +6.8 in to floor  OK
-      feet       +0.6 in to floor  OK
+      shoulders  +5.2 in to canopy OK
+      torso      +8.5 in to floor  OK
+      knees     +11.6 in to floor  OK
+      shins      +7.0 in to floor  OK
+      feet       +0.8 in to floor  OK
       knee angle  125 deg, heel at y -1.73 m
   5th-percentile woman: head to canopy  +7.6 in (OK, want >= 1.0 in)
-      shoulders +12.0 in to canopy OK
-      torso      +8.4 in to floor  OK
-      knees      +9.4 in to floor  OK
-      shins      +5.5 in to floor  OK
-      feet       +0.6 in to floor  OK
+      shoulders +12.2 in to canopy OK
+      torso      +8.5 in to floor  OK
+      knees      +9.5 in to floor  OK
+      shins      +5.7 in to floor  OK
+      feet       +0.8 in to floor  OK
       knee angle  125 deg, heel at y -1.57 m
   Seat frame to firewall face (below its top edge): +8.5 in  OK
-  Seat frame to belly skin (floor depth under the seat): +2.0 in  OK
+  Seat frame to belly skin (floor depth under the seat): +2.2 in  OK
   Foot-rest rail travel (man -> woman): 6.2 in
   Seat: back 25 deg from vertical, pan 12 deg, H-point (-0.95, 0.43) m = 7.1 in above the heel line
-preview -> x1hs_preview.png faces: 79608
+Simulator cockpit (left seat; the right seat is the mirror image)
+  Screen: 13.1 x 8.1 in landscape (15.4 in diagonal), centre x 0, y -1.37, z 0.84 m, reclined 12 deg
+  95th-percentile man: eye y -0.69, z 1.14 m
+      view down over the nose 13.3 deg, over the side sill 46.3 deg; top of the screen sits 13.1 deg below eye level
+      screen centre 31.5 in from the eye, 24 deg inboard, 22 deg down; reach from the shoulder 26.1 in (far top corner 28.2 in)
+      knee to the dash underside +3.6 in, to the screen's lower edge +2.5 in
+  5th-percentile woman: eye y -0.76, z 0.99 m
+      view down over the nose  7.9 deg, over the side sill 31.7 deg; top of the screen sits  3.1 deg below eye level
+      screen centre 27.2 in from the eye, 26 deg inboard, 13 deg down; reach from the shoulder 24.3 in (far top corner 27.7 in)
+      knee to the dash underside +5.6 in, to the screen's lower edge +4.5 in
+preview -> x1hs_preview.png faces: 91424

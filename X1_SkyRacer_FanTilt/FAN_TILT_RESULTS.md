@@ -1,6 +1,8 @@
 # X1 SkyRacer fan-tilt study (branch `fan-tilt`, from `cockpit25`)
 
-**Latest (27 Oct 2026):** the rear wing's folding panel is back to full thickness (10 %, was 5.5 %) for strength, with the hinges and heights re-solved. See "Thicker rear wing" at the end; it supersedes some figures in the sections before it.
+**Latest (10 Nov 2026):** the cockpit is reworked for simulator use: open under the canopy with a smooth shared edge, one continuous canopy seal, a lined cabin and a single centre screen. See "Simulator cockpit" at the end. Nothing outside the cockpit changed.
+
+Earlier (27 Oct 2026): the rear wing's folding panel is back to full thickness (10 %, was 5.5 %) for strength, with the hinges and heights re-solved. See "Thicker rear wing" at the end; it supersedes some figures in the sections before it.
 
 Earlier: the engine and accumulator were made 3.9 in lower and the belly is deepened under the engine bay, so the lowered rear wing clears the engine by 2.8 in. See "Engine lowered, belly tub" at the end.
 
@@ -111,6 +113,8 @@ and pitch moment balanced), minimum-power pitch chosen at each speed.
 - `power_vs_speed.png`, `tail_compare.png`, `tail_side.png`, `folded.png`
 - `rear_hinge_trim.py`: trim cost of the real-hinge rear wing
 - `engine_bay.png`: centreline section before / after lowering the engine
+- `cockpit_sim.png`: the simulator cockpit (outside, from above without the glass, from the left seat)
+- `x1_web_glb.py`: writes the web GLB that the viewers and X1_sim load
 - `spine_louvres.png`: the spine intake louvres bent to the crown
 
 ## Pusher depth and tilt (27 Oct 2026)
@@ -317,3 +321,71 @@ Trim, fully loaded, with the same models as before:
 The longer twisted panel lowers the mean rear incidence a little. Raising `REAR_STUB_INC_DEG` to 10°
 recovers the 8 hp and 1 mph, but takes the stub further past stall in the nose-up transition. It is
 left at 9°.
+
+## Simulator cockpit (10 Nov 2026)
+
+The cockpit is reworked so the SkyRacer can be flown from the seat in a flight simulator (X1_sim's
+cockpit and VR views). Rules, fold, masses and trim are unchanged; `cockpit_sim.png` shows the result.
+
+### Canopy edge and seal
+
+- **The problem:** the fuselage skin used to run closed under the glass, and the glass edge sat 15 mm
+  inside a coarser skin mesh, so the edge showed as a jagged line.
+- **Shared edge:** the skin is now cut along the canopy outline. Skin, glass and seal use the same
+  stations and the same edge points (60 stations, bunched toward the rounded ends), so the edge is
+  smooth and has no gaps.
+- **One seal:** the black seal is one closed loop all the way round the canopy, a 32 mm bead. It was
+  two separate side strips. The hoop behind the seats stays; both are in `Canopy_Frame`.
+
+### Inside
+
+- **Opening:** the skin is open from the dash (y −1.42 m) to the firewall. Ahead of the dash and behind
+  the firewall the surface under the glass is a matt black deck (`Cockpit_Deck`), which also cuts
+  reflections in the glass.
+- **Liner:** a dark tub (`Cockpit_Tub`) sits 22 mm inside the skin from the toe bulkhead to the
+  firewall and faces inward, so an inside view shows cabin walls. The sill between skin and liner is
+  closed. The flank swoosh and front wing roots no longer show inside the cabin.
+- **Dash:** a plain beam from wall to wall with one bright strip (`Dash`). There is nothing in front of
+  either seat.
+- **Screen:** one 15.4 in landscape screen (13.1 × 8.1 in, the size of a Tesla Model 3's) floats in
+  the middle, just aft of the dash, reclined 12°. `Dash_Screen` is the housing. `Screen_Display` is the
+  lit face, with UVs running 0 to 1 (left to right, bottom to top, as the occupants see it), so a
+  simulator can draw its instruments straight onto it.
+- **Console and stick:** a centre console at elbow height carries one side-stick that either seat can
+  reach (`Console`, `Stick`; the stick pivots about its own origin). Set `COCKPIT_STICK = False` to
+  leave both out.
+- **Reference points:** `Eye_L` / `Eye_R` (design eye, midway between the two manikins),
+  `Screen_Centre` and `Stick_Pivot`. They are empties in Blender and empty nodes in the web GLB.
+
+### Checks (left seat; printed on every run)
+
+| | 95th-percentile man | 5th-percentile woman |
+| --- | --- | --- |
+| Eye point (y, z) | −0.69, 1.14 m | −0.76, 0.99 m |
+| View down over the nose | 13.3° | 7.9° |
+| View down over the side sill | 46° | 32° |
+| Top of the screen below eye level | 13.1° | 3.1° |
+| Screen centre from the eye | 31.5 in, 24° inboard, 22° down | 27.2 in, 26° inboard, 13° down |
+| Reach, shoulder to screen centre (far top corner) | 26.1 in (28.2 in) | 24.3 in (27.7 in) |
+| Knee to the dash underside / screen lower edge | 3.6 in / 2.5 in | 5.6 in / 4.5 in |
+
+- The screen is off to the side of each occupant's straight-ahead view, so it does not block the
+  view forward.
+- The short pilot sees 7.9° down over the nose. The seat has no height adjustment in the model; a
+  raised seat or cushion would improve that.
+- The cockpit fit, all X1 Racing rules and the fold (89.4 × 52.9 in) are unchanged.
+
+### Settings and files
+
+- `COCKPIT`, `SCREEN` and `COCKPIT_STICK` in `x1_skyracer_blender.py`.
+- `x1_web_glb.py` (new here) writes `X1_SkyRacer_FanTilt_web.glb`, the file X1_sim loads. It carries
+  the screen UVs, a lit screen material and the reference nodes.
+- `export_viewer.py` now runs on its own: `python3 export_viewer.py ../x1_skyracer_blender.py out.json`.
+- The viewer has a Cockpit button that puts the camera at the left seat's eye point.
+
+### For the simulator
+
+The part names X1_sim already uses are unchanged (`Canopy`, `Canopy_Frame`, `Seat_`, `Footrest_`,
+`Cockpit_Floor`, `Firewall`, rotors and fans), so the new GLB is a drop-in for
+`airframe/X1_SkyRacer_FanTilt_web.glb`. To show flight data on the dash, give the mesh named
+`Screen_Display` a canvas texture.
